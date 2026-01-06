@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản Lý CLB Pickleball - Tính Tiền</title>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"></script>
+    <title>Quản Lý CLB Pickleball - Firebase</title>
     <style>
         :root {
             --color-primary: #208791;
@@ -20,19 +17,10 @@
             --color-success: #22c75a;
             --color-error: #c0152f;
             --color-warning: #a84b2f;
-            --color-green: #22c75a;
-            --color-red: #ff5459;
             --radius: 8px;
-            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
-            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.06);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: var(--color-bg);
@@ -41,11 +29,7 @@
             line-height: 1.5;
         }
 
-        .container {
-            max-width: 700px;
-            margin: 0 auto;
-        }
-
+        .container { max-width: 700px; margin: 0 auto; }
         header {
             text-align: center;
             margin-bottom: 24px;
@@ -53,15 +37,44 @@
             border-bottom: 2px solid var(--color-primary);
         }
 
-        header h1 {
-            font-size: 24px;
-            color: var(--color-primary);
-            margin-bottom: 4px;
+        header h1 { font-size: 24px; color: var(--color-primary); margin-bottom: 4px; }
+        header p { color: var(--color-text-secondary); font-size: 14px; }
+
+        .sync-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(34, 199, 90, 0.1);
+            border: 1px solid rgba(34, 199, 90, 0.3);
+            border-radius: var(--radius);
+            margin-bottom: 16px;
+            font-size: 12px;
+            color: #1a8a3a;
         }
 
-        header p {
-            color: var(--color-text-secondary);
-            font-size: 14px;
+        .sync-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c75a;
+        }
+
+        .sync-status.loading {
+            background: rgba(168, 75, 47, 0.1);
+            border-color: rgba(168, 75, 47, 0.3);
+            color: #a84b2f;
+        }
+
+        .sync-status.loading .sync-indicator {
+            background: #a84b2f;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         .tabs {
@@ -79,7 +92,7 @@
             border-bottom: 3px solid transparent;
             color: var(--color-text-secondary);
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
             transition: all 150ms;
             white-space: nowrap;
@@ -90,18 +103,10 @@
             border-bottom-color: var(--color-primary);
         }
 
-        .tab-content {
-            display: none;
-        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
 
-        .tab-content.active {
-            display: block;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
+        .form-group { margin-bottom: 16px; }
         label {
             display: block;
             margin-bottom: 8px;
@@ -110,7 +115,7 @@
             color: var(--color-text);
         }
 
-        input, select, textarea {
+        input, select {
             width: 100%;
             padding: 10px 12px;
             border: 1px solid var(--color-border);
@@ -119,18 +124,12 @@
             font-family: inherit;
             color: var(--color-text);
             background: var(--color-surface);
-            transition: border-color 150ms;
         }
 
-        input:focus, select:focus, textarea:focus {
+        input:focus, select:focus {
             outline: none;
             border-color: var(--color-primary);
             box-shadow: 0 0 0 3px rgba(32, 135, 145, 0.15);
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 100px;
         }
 
         .btn {
@@ -147,29 +146,24 @@
             margin-top: 8px;
         }
 
-        .btn:hover {
-            background: var(--color-primary-hover);
-        }
+        .btn:hover { background: var(--color-primary-hover); }
+        .btn.success { background: var(--color-success); }
+        .btn.success:hover { background: #1a8a3a; }
+        .btn.danger { background: var(--color-error); }
+        .btn.danger:hover { background: #a0121f; }
+        .btn.warning { background: var(--color-warning); }
+        .btn.warning:hover { background: #974325; }
 
-        .btn:active {
-            background: var(--color-primary-active);
-        }
-
-        .btn-small {
-            width: auto;
-            padding: 6px 12px;
-            font-size: 12px;
-            margin: 0;
-        }
-
-        .match-list {
-            display: flex;
-            flex-direction: column;
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 8px;
-            margin-top: 16px;
         }
 
-        .match-item {
+        .row .form-group { margin-bottom: 0; }
+
+        .member-list { margin-top: 16px; }
+        .member-item {
             background: var(--color-surface);
             border: 1px solid var(--color-border);
             border-radius: var(--radius);
@@ -177,20 +171,24 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 8px;
         }
 
-        .match-info {
-            flex: 1;
+        .member-name { font-weight: 600; }
+        .member-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(32, 135, 145, 0.1);
+            color: var(--color-primary);
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 500;
+            margin-left: 8px;
         }
 
-        .match-players {
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .match-score {
-            font-size: 12px;
-            color: var(--color-text-secondary);
+        .member-badge.guest {
+            background: rgba(165, 75, 47, 0.1);
+            color: #a84b2f;
         }
 
         .delete-btn {
@@ -204,15 +202,59 @@
             transition: background 150ms;
         }
 
-        .delete-btn:hover {
-            background: #a0121f;
+        .delete-btn:hover { background: #a0121f; }
+
+        .match-item {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
         }
+
+        .match-info { flex: 1; }
+        .match-players { font-weight: 600; margin-bottom: 4px; font-size: 14px; }
+        .match-score { font-size: 12px; color: var(--color-text-secondary); }
+
+        .payment-item {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .payment-name { font-weight: 600; font-size: 16px; }
+        .money {
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+        }
+
+        .money.positive { color: var(--color-success); }
+        .money.negative { color: var(--color-error); }
+
+        .total-payment {
+            background: rgba(32, 135, 145, 0.1);
+            border: 2px solid var(--color-primary);
+            border-radius: var(--radius);
+            padding: 16px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .total-payment-label { font-size: 14px; color: var(--color-text-secondary); margin-bottom: 8px; }
+        .total-payment-value { font-size: 32px; font-weight: 700; color: var(--color-primary); font-family: 'Courier New', monospace; }
 
         .ranking-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 16px;
-            box-shadow: var(--shadow-sm);
             border-radius: var(--radius);
             overflow: hidden;
         }
@@ -235,14 +277,7 @@
             font-size: 14px;
         }
 
-        .ranking-table tbody tr {
-            background: var(--color-surface);
-            transition: background 150ms;
-        }
-
-        .ranking-table tbody tr:hover {
-            background: rgba(32, 135, 145, 0.05);
-        }
+        .ranking-table tbody tr:hover { background: rgba(32, 135, 145, 0.05); }
 
         .rank-badge {
             display: inline-flex;
@@ -261,356 +296,195 @@
         .rank-2 { background: #c0c0c0; color: #333; }
         .rank-3 { background: #cd7f32; color: white; }
 
-        .win { color: var(--color-success); font-weight: 600; }
-        .loss { color: var(--color-error); font-weight: 600; }
-
-        .money {
-            font-weight: 600;
-            font-family: 'Courier New', monospace;
-        }
-
-        .money.positive { color: var(--color-success); }
-        .money.negative { color: var(--color-error); }
-
         .empty-state {
             text-align: center;
             padding: 40px 20px;
             color: var(--color-text-secondary);
         }
 
-        .empty-state p { margin: 0; }
-
-        .summary {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .summary-card {
-            background: var(--color-surface);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius);
-            padding: 16px;
-            text-align: center;
-        }
-
-        .summary-label {
-            font-size: 12px;
-            color: var(--color-text-secondary);
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-
-        .summary-value {
-            font-size: 24px;
-            font-weight: 600;
-            color: var(--color-primary);
-        }
-
-        .message {
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
             padding: 12px 16px;
             border-radius: var(--radius);
-            margin-bottom: 16px;
-            display: none;
-        }
-
-        .message.success {
-            display: block;
-            background: rgba(34, 199, 90, 0.1);
-            color: #1a8a3a;
-            border: 1px solid rgba(34, 199, 90, 0.3);
-        }
-
-        .message.error {
-            display: block;
-            background: rgba(192, 21, 47, 0.1);
-            color: #a0121f;
-            border: 1px solid rgba(192, 21, 47, 0.3);
-        }
-
-        .info-text {
-            font-size: 12px;
-            color: var(--color-text-secondary);
-            margin-top: 8px;
-            font-style: italic;
-        }
-
-        .row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-
-        .row .form-group { margin-bottom: 0; }
-
-        h2 {
-            font-size: 18px;
-            margin-top: 16px;
-            margin-bottom: 12px;
-            color: var(--color-text);
-        }
-
-        h3 {
-            font-size: 16px;
-            color: var(--color-text);
-        }
-
-        .payment-item {
-            background: var(--color-surface);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius);
-            padding: 16px;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .payment-name {
-            font-weight: 600;
-            font-size: 16px;
-        }
-
-        .payment-amount {
-            text-align: right;
-        }
-
-        .total-payment {
-            background: rgba(32, 135, 145, 0.1);
-            border: 2px solid var(--color-primary);
-            border-radius: var(--radius);
-            padding: 16px;
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .total-payment-label {
+            color: white;
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+            max-width: 300px;
             font-size: 14px;
-            color: var(--color-text-secondary);
-            margin-bottom: 8px;
         }
 
-        .total-payment-value {
-            font-size: 32px;
-            font-weight: 700;
-            color: var(--color-primary);
-            font-family: 'Courier New', monospace;
+        .notification.success { background: var(--color-success); }
+        .notification.error { background: var(--color-error); }
+        .notification.info { background: var(--color-primary); }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
 
-        .member-list {
-            margin-top: 16px;
-        }
+        h2 { font-size: 18px; margin-top: 16px; margin-bottom: 12px; color: var(--color-text); }
+        h3 { font-size: 14px; margin: 16px 0 8px 0; color: var(--color-text); }
 
-        .member-item {
-            background: var(--color-surface);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius);
-            padding: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .member-name {
+        .payment-date-header {
+            font-size: 16px;
             font-weight: 600;
-        }
-
-        .member-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            background: rgba(32, 135, 145, 0.1);
             color: var(--color-primary);
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
+            margin: 16px 0 12px 0;
         }
 
-        .member-badge.guest {
-            background: rgba(165, 75, 47, 0.1);
-            color: #a84b2f;
-        }
-
-        .section-header {
-            margin-top: 24px;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid var(--color-primary);
-        }
-
-        .add-member-form {
-            background: rgba(32, 135, 145, 0.05);
-            border: 1px solid var(--color-primary);
-            border-radius: var(--radius);
-            padding: 16px;
-            margin-bottom: 24px;
-        }
-
-        .add-member-form h3 {
-            margin-top: 0;
-        }
+        .info-text { font-size: 12px; color: var(--color-text-secondary); margin-top: 8px; }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
             <h1>🏓 Quản Lý CLB Pickleball</h1>
-            <p>Tính tiền theo kết quả trận đấu (Firebase)</p>
+            <p>Tính tiền + Firebase Cloud Sync</p>
         </header>
 
-        <div class="message" id="message"></div>
-
-        <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab(event, 'members')">👥 Danh Sách VĐV</button>
-            <button class="tab-btn" onclick="switchTab(event, 'schedule')">📅 Lịch Sinh Hoạt</button>
-            <button class="tab-btn" onclick="switchTab(event, 'matches')">🎾 Trận Đấu</button>
-            <button class="tab-btn" onclick="switchTab(event, 'payment')">💳 Nộp Tiền</button>
-            <button class="tab-btn" onclick="switchTab(event, 'ranking-money')">💰 BXH Tiền</button>
-            <button class="tab-btn" onclick="switchTab(event, 'ranking-skill')">⭐ BXH Trình Độ</button>
-            <button class="tab-btn" onclick="switchTab(event, 'history')">📜 Lịch Sử</button>
-            <button class="tab-btn" onclick="switchTab(event, 'backup')">💾 Backup</button>
+        <div class="sync-status" id="syncStatus">
+            <span class="sync-indicator"></span>
+            <span id="syncText">Sẵn sàng đồng bộ</span>
         </div>
 
-        <!-- Tab Danh Sách VĐV -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab(event, 'members')">👥 VĐV</button>
+            <button class="tab-btn" onclick="switchTab(event, 'schedule')">📅 Lịch</button>
+            <button class="tab-btn" onclick="switchTab(event, 'matches')">🎾 Trận</button>
+            <button class="tab-btn" onclick="switchTab(event, 'payment')">💳 Tiền</button>
+            <button class="tab-btn" onclick="switchTab(event, 'ranking-money')">💰 BXH Tiền</button>
+            <button class="tab-btn" onclick="switchTab(event, 'ranking-skill')">⭐ BXH Trình</button>
+            <button class="tab-btn" onclick="switchTab(event, 'ranking-score')">🏆 BXH Điểm</button>
+            <button class="tab-btn" onclick="switchTab(event, 'backup')">💾 Backup</button>
+            <button class="tab-btn" onclick="switchTab(event, 'settings')">🔐 Cài Đặt</button>
+        </div>
+
+        <!-- Tab VĐV -->
         <div id="members" class="tab-content active">
-            <div class="add-member-form">
-                <h3>➕ Thêm Thành Viên/Khách</h3>
-                <div class="row">
-                    <div class="form-group">
-                        <label for="memberName">Tên VĐV</label>
-                        <input type="text" id="memberName" placeholder="Nhập tên">
-                    </div>
-                    <div class="form-group">
-                        <label for="memberType">Loại</label>
-                        <select id="memberType">
-                            <option value="club">Thành Viên CLB</option>
-                            <option value="guest">Khách</option>
-                        </select>
-                    </div>
+            <h2>➕ Thêm Thành Viên/Khách</h2>
+            <div class="row">
+                <div class="form-group">
+                    <label>Tên VĐV</label>
+                    <input type="text" id="memberName" placeholder="Nhập tên">
                 </div>
-                <button class="btn" onclick="addMember()">➕ Thêm VĐV</button>
+                <div class="form-group">
+                    <label>Loại</label>
+                    <select id="memberType">
+                        <option value="club">Thành Viên CLB</option>
+                        <option value="guest">Khách</option>
+                    </select>
+                </div>
             </div>
+            <button class="btn" onclick="addMember()">➕ Thêm VĐV</button>
 
-            <h2 class="section-header">👥 Danh Sách Thành Viên CLB</h2>
-            <div class="member-list" id="clubMembersList"></div>
-
-            <h2 class="section-header">🤝 Danh Sách Khách</h2>
-            <div class="member-list" id="guestMembersList"></div>
+            <h2>👥 Danh Sách Thành Viên</h2>
+            <div class="member-list" id="membersList"></div>
         </div>
 
         <!-- Tab Lịch Sinh Hoạt -->
         <div id="schedule" class="tab-content">
-            <h2>Quản Lý Lịch Sinh Hoạt</h2>
+            <h2>📅 Thêm Lịch Sinh Hoạt</h2>
             <div class="row">
                 <div class="form-group">
-                    <label for="scheduleDate">Ngày Sinh Hoạt</label>
-                    <input type="date" id="scheduleDate">
+                    <label>Ngày Sinh Hoạt (dd/mm/yyyy)</label>
+                    <input type="text" id="scheduleDate" placeholder="01/12/2025">
                 </div>
-                <div class="form-group">
-                    <label for="scheduleNote">Ghi Chú (tùy chọn)</label>
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label>Ghi Chú (tùy chọn)</label>
                     <input type="text" id="scheduleNote" placeholder="Ví dụ: Vòng 1, Bán kết...">
                 </div>
             </div>
-            <button class="btn" onclick="addSchedule()">➕ Thêm Ngày Sinh Hoạt</button>
+            <button class="btn" onclick="addSchedule()">📅 Thêm Ngày</button>
 
-            <h3 style="margin-top: 24px; margin-bottom: 12px;">Danh Sách Sinh Hoạt</h3>
-            <div class="match-list" id="scheduleList"></div>
+            <h2>Danh Sách Lịch Sinh Hoạt</h2>
+            <div class="member-list" id="scheduleList"></div>
         </div>
 
         <!-- Tab Trận Đấu -->
         <div id="matches" class="tab-content">
+            <h2>🎾 Ghi Lại Trận Đấu</h2>
             <div class="form-group">
-                <label for="eventDate">Chọn Ngày Sinh Hoạt</label>
-                <select id="eventDate" onchange="updateMatchList()">
+                <label>Chọn Ngày Sinh Hoạt</label>
+                <select id="eventDate" onchange="updateMatchForm()">
                     <option value="">-- Chọn ngày --</option>
                 </select>
             </div>
 
-            <h3 style="margin-top: 20px; margin-bottom: 12px;">Cặp 1</h3>
+            <h3>Cặp 1</h3>
             <div class="row">
                 <div class="form-group">
-                    <label for="pair1vdv1">VĐV 1</label>
-                    <select id="pair1vdv1">
+                    <label>VĐV 1</label>
+                    <select id="pair1a">
                         <option value="">-- Chọn --</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="pair1vdv2">VĐV 2</label>
-                    <select id="pair1vdv2">
+                    <label>VĐV 2</label>
+                    <select id="pair1b">
                         <option value="">-- Chọn --</option>
                     </select>
                 </div>
             </div>
+            <div class="form-group">
+                <label>Tỷ Số</label>
+                <input type="number" id="score1" placeholder="15" min="0">
+            </div>
 
-            <h3 style="margin-top: 20px; margin-bottom: 12px;">Cặp 2</h3>
+            <h3>Cặp 2</h3>
             <div class="row">
                 <div class="form-group">
-                    <label for="pair2vdv1">VĐV 1</label>
-                    <select id="pair2vdv1">
+                    <label>VĐV 1</label>
+                    <select id="pair2a">
                         <option value="">-- Chọn --</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="pair2vdv2">VĐV 2</label>
-                    <select id="pair2vdv2">
+                    <label>VĐV 2</label>
+                    <select id="pair2b">
                         <option value="">-- Chọn --</option>
                     </select>
                 </div>
             </div>
-
-            <h3 style="margin-top: 20px; margin-bottom: 12px;">Điểm Số</h3>
-            <div class="row">
-                <div class="form-group">
-                    <label for="pairScore1">Điểm Cặp 1</label>
-                    <input type="number" id="pairScore1" placeholder="15" min="0">
-                </div>
-                <div class="form-group">
-                    <label for="pairScore2">Điểm Cặp 2</label>
-                    <input type="number" id="pairScore2" placeholder="10" min="0">
-                </div>
+            <div class="form-group">
+                <label>Tỷ Số</label>
+                <input type="number" id="score2" placeholder="10" min="0">
             </div>
 
-            <button class="btn" onclick="addDoublesMatch()">➕ Thêm Trận Đôi</button>
+            <button class="btn" onclick="addMatch()">➕ Thêm Trận Đấu</button>
 
-            <h3 style="margin-top: 24px; margin-bottom: 12px;">Các Trận Đấu Hôm Nay</h3>
-            <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 12px; margin-bottom: 16px; text-align: center;">
-                <div style="font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px;">Tổng Tiền Hôm Nay</div>
-                <div style="font-size: 28px; font-weight: 600; color: var(--color-primary);" id="dailyTotal">0k</div>
-            </div>
-            <div class="match-list" id="matchList"></div>
+            <h2>Danh Sách Trận Đấu</h2>
+            <div class="member-list" id="matchList"></div>
         </div>
 
-        <!-- Tab Nộp Tiền -->
+        <!-- Tab Tính Tiền -->
         <div id="payment" class="tab-content">
+            <h2>💳 Bảng Tính Tiền</h2>
             <div class="form-group">
-                <label for="paymentDate">Chọn Ngày Sinh Hoạt</label>
+                <label>Chọn Ngày Sinh Hoạt</label>
                 <select id="paymentDate" onchange="updatePaymentList()">
                     <option value="">-- Chọn ngày --</option>
                 </select>
             </div>
-
-            <h3 style="margin-top: 24px; margin-bottom: 12px;" id="paymentDateDisplay"></h3>
             <div id="paymentList"></div>
         </div>
 
         <!-- Tab BXH Tiền -->
         <div id="ranking-money" class="tab-content">
-            <div class="summary" id="summary"></div>
-            <table class="ranking-table" id="rankingTableMoney">
+            <h2>💰 Bảng Xếp Hạng Tiền (Năm Dương Lịch)</h2>
+            <table class="ranking-table">
                 <thead>
                     <tr>
                         <th>Hạng</th>
                         <th>Tên VĐV</th>
-                        <th>Thắng/Thua</th>
+                        <th>Trận</th>
                         <th>Tiền (k)</th>
                     </tr>
                 </thead>
-                <tbody id="rankingBodyMoney">
+                <tbody id="rankingMoneyBody">
                     <tr>
-                        <td colspan="4" class="empty-state">
-                            <p>Chưa có dữ liệu. Hãy nhập kết quả trận đấu!</p>
-                        </td>
+                        <td colspan="4" class="empty-state" style="padding: 40px 20px;">Chưa có dữ liệu</td>
                     </tr>
                 </tbody>
             </table>
@@ -618,821 +492,750 @@
 
         <!-- Tab BXH Trình Độ -->
         <div id="ranking-skill" class="tab-content">
-            <div style="background: rgba(34, 199, 90, 0.1); border: 1px solid rgba(34, 199, 90, 0.3); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
-                <strong style="color: #1a8a3a;">ℹ️ Ghi chú:</strong> Chỉ hiển thị VĐV đã thi đấu ≥5 trận
-            </div>
-            <table class="ranking-table" id="rankingTableSkill">
+            <h2>⭐ Bảng Xếp Hạng Trình Độ (≥5 Trận)</h2>
+            <table class="ranking-table">
                 <thead>
                     <tr>
                         <th>Hạng</th>
                         <th>Tên VĐV</th>
-                        <th>Trận Đấu</th>
-                        <th>Tỉ Lệ Thắng (%)</th>
+                        <th>Trận</th>
+                        <th>Thắng %</th>
                     </tr>
                 </thead>
-                <tbody id="rankingBodySkill">
+                <tbody id="rankingSkillBody">
                     <tr>
-                        <td colspan="4" class="empty-state">
-                            <p>Chưa có VĐV thi đấu ≥5 trận</p>
-                        </td>
+                        <td colspan="4" class="empty-state" style="padding: 40px 20px;">Chưa có dữ liệu</td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <!-- Tab Lịch Sử -->
-        <div id="history" class="tab-content">
-            <div id="historyList"></div>
+        <!-- Tab BXH Điểm Số -->
+        <div id="ranking-score" class="tab-content">
+            <h2>🏆 Bảng Xếp Hạng Điểm Số</h2>
+            <table class="ranking-table">
+                <thead>
+                    <tr>
+                        <th>Hạng</th>
+                        <th>Tên VĐV</th>
+                        <th>W/L</th>
+                        <th>Điểm</th>
+                        <th>Hiệu Số</th>
+                    </tr>
+                </thead>
+                <tbody id="rankingScoreBody">
+                    <tr>
+                        <td colspan="5" class="empty-state" style="padding: 40px 20px;">Chưa có dữ liệu</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Tab Cài Đặt -->
+        <div id="settings" class="tab-content">
+            <h2>🔐 Cài Đặt Bảo Mật</h2>
+            <div class="form-group">
+                <label>
+                    <strong>⚠️ Chế Độ Xem (Chỉ Đọc) - Luôn Bật</strong>
+                </label>
+                <p class="info-text" style="margin-top: 8px;">Chế độ xem luôn bật. Nhập mật khẩu để tạm tắt trong 5 phút.</p>
+                <button class="btn warning" onclick="toggleReadOnlyWithPassword()">🔓 Tắt Chế Độ Xem (5 phút)</button>
+            </div>
+
+            <div class="info-text" style="margin-top: 20px; background: rgba(192, 21, 47, 0.1); padding: 12px; border-radius: 8px;">
+                ⚠️ <strong>Chế Độ Xem:</strong> Khi bật, chỉ khóa nút Thêm / Ghi / Xóa<br>
+                ⚠️ <strong>Mật Khẩu:</strong> Được lưu và đồng bộ trên Cloud Firebase
+            </div>
+
+            <h3 style="margin-top: 30px;">Trạng Thái Hiện Tại</h3>
+            <div class="payment-item">
+                <div class="payment-name">Chế Độ</div>
+                <div><span id="modeStatus" class="money negative">🔒 Chỉ Xem (Bật)</span></div>
+            </div>
+            <div class="payment-item">
+                <div class="payment-name">Đồng Bộ Cloud</div>
+                <div><span id="syncStatus2" class="money positive">✓ Tự Động</span></div>
+            </div>
         </div>
 
         <!-- Tab Backup -->
         <div id="backup" class="tab-content">
-            <h2>📥 Tải Về Dữ Liệu</h2>
-            <p style="color: var(--color-text-secondary); margin-bottom: 16px;">Tải toàn bộ dữ liệu dưới dạng file JSON để backup hoặc chia sẻ cho người khác</p>
-            <button class="btn" style="background: #22c75a;" onclick="exportData()">📥 Tải Về Dữ Liệu (JSON)</button>
-
-            <h2 style="margin-top: 32px;">📤 Khôi Phục Dữ Liệu</h2>
-            <p style="color: var(--color-text-secondary); margin-bottom: 16px;">Chọn file JSON đã lưu trước đây để khôi phục dữ liệu</p>
-            <div class="form-group">
-                <label for="importFile">Chọn File JSON</label>
-                <input type="file" id="importFile" accept=".json">
-            </div>
-            <button class="btn" onclick="importData()">📤 Khôi Phục Dữ Liệu</button>
-
-            <h2 style="margin-top: 32px;">🗑️ Xóa Tất Cả</h2>
-            <p style="color: var(--color-text-secondary); margin-bottom: 16px;">⚠️ Xóa toàn bộ dữ liệu trên Firebase (không thể hoàn tác)</p>
-            <button class="btn" style="background: #c0152f;" onclick="clearAllData()">🗑️ Xóa Tất Cả Dữ Liệu</button>
+            <h2>💾 Sao Lưu & Đồng Bộ</h2>
+            <button class="btn success" onclick="toggleAutoSync()" id="autoSyncBtn">🔄 Tự Động Đồng Bộ Firebase</button>
+            <button class="btn" onclick="manualSaveFirebase()">💾 Lưu Lên Firebase Ngay</button>
+            <button class="btn" onclick="manualLoadFirebase()">📥 Tải Từ Firebase</button>
+            <button class="btn" onclick="exportData()">📥 Tải Về (JSON)</button>
+            <button class="btn danger" onclick="clearAllData()">🗑️ Xóa Tất Cả</button>
 
             <div class="info-text" style="margin-top: 20px; background: rgba(34, 199, 90, 0.1); padding: 12px; border-radius: 8px;">
-                ✓ Dữ liệu được lưu trên Firebase Cloud<br>
-                ✓ Tự động đồng bộ trên tất cả thiết bị<br>
-                ✓ Không ai có thể truy cập dữ liệu của bạn
+                ✓ Dữ liệu được lưu trên máy tính + Firebase Cloud<br>
+                ✓ 100% offline - không cần internet<br>
+                ✓ Tự động đồng bộ khi có thay đổi
             </div>
         </div>
     </div>
 
-    <script>
-        // Firebase Configuration
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+
         const firebaseConfig = {
-            apiKey: "AIzaSyBG-6841iqN0DM-n7Bz7rbMSlAF5rqQtU",
-            authDomain: "vietri-c414e.firebaseapp.com",
-            databaseURL: "https://vietri-c414e-default-rtdb.asia-southeast1.firebaseio.com",
-            projectId: "vietri-c414e",
-            storageBucket: "vietri-c414e.firebasestorage.app",
+            apiKey: "AIzaSyBG-6841iqN0DM-n7Bz7rbMSlAF5rqrQtU",
+            authDomain: "viettri-c414e.firebaseapp.com",
+            databaseURL: "https://viettri-c414e-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "viettri-c414e",
+            storageBucket: "viettri-c414e.firebasestorage.app",
             messagingSenderId: "149479382894",
             appId: "1:149479382894:web:9408a8cc797ef22fe42b7f"
-        };        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        const auth = firebase.auth();
+        };
 
-        // Global variables
-        let members = [];
-        let allMatches = [];
-        let scheduleList = [];
-        const dbPath = 'pickleball_club';
-        let isInitialized = false;
-        let currentUser = null;
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
 
-        // Auto login and initialize
-        auth.onAuthStateChanged(user => {
-            currentUser = user;
-            if (user) {
-                console.log('✓ Đã đăng nhập:', user.uid);
-                if (!isInitialized) {
-                    isInitialized = true;
-                    setTimeout(() => {
-                        loadPlayerSelects();
-                        loadSchedules();
-                        updateMembersList();
-                        loadDataFromFirebase();
-                    }, 500);
-                }
-            } else {
-                console.log('Đang đăng nhập Anonymous...');
-                // Auto sign in anonymously
-                auth.signInAnonymously()
-                    .catch(error => {
-                        console.error('Lỗi đăng nhập:', error);
-                        showMessage(`❌ Lỗi kết nối Firebase: ${error.message}`, 'error');
-                    });
-            }
-        });
-
-        // Test Firebase connection
-        setTimeout(() => {
-            if (!currentUser) {
-                console.warn('⚠️ Chưa xác thực người dùng, kiểm tra Firebase config');
-            }
-        }, 3000);
-
-        function loadDataFromFirebase() {
-            if (!currentUser) {
-                console.error('Chưa xác thực người dùng');
-                return;
-            }
-
-            const membersRef = db.ref(dbPath + '/members');
-            const matchesRef = db.ref(dbPath + '/allMatches');
-            const scheduleRef = db.ref(dbPath + '/scheduleList');
-
-            console.log('🔄 Đang tải dữ liệu từ Firebase...');
-
-            // Load members with realtime sync
-            membersRef.on('value', snap => {
-                members = [];
-                if (snap.exists()) {
-                    snap.forEach(child => {
-                        members.push(child.val());
-                    });
-                    console.log('✓ Thành viên:', members.length);
-                } else {
-                    console.log('Chưa có thành viên');
-                }
-                updateMembersList();
-                loadPlayerSelects();
-            }, error => {
-                console.error('Lỗi tải thành viên:', error.code, error.message);
-                showMessage(`❌ Lỗi tải thành viên: ${error.message}`, 'error');
-            });
-
-            // Load matches with realtime sync
-            matchesRef.on('value', snap => {
-                allMatches = [];
-                if (snap.exists()) {
-                    snap.forEach(child => {
-                        allMatches.push(child.val());
-                    });
-                    console.log('✓ Trận đấu:', allMatches.length);
-                } else {
-                    console.log('Chưa có trận đấu');
-                }
-                updateMatchList();
-                updatePaymentList();
-                updateRankingMoney();
-                updateRankingSkill();
-                updateHistory();
-            }, error => {
-                console.error('Lỗi tải trận đấu:', error.code, error.message);
-            });
-
-            // Load schedules with realtime sync
-            scheduleRef.on('value', snap => {
-                scheduleList = [];
-                if (snap.exists()) {
-                    snap.forEach(child => {
-                        scheduleList.push(child.val());
-                    });
-                    scheduleList.sort((a, b) => new Date(a.date) - new Date(b.date));
-                    console.log('✓ Lịch sinh hoạt:', scheduleList.length);
-                } else {
-                    console.log('Chưa có lịch sinh hoạt');
-                }
-                loadSchedules();
-            }, error => {
-                console.error('Lỗi tải lịch sinh hoạt:', error.code, error.message);
-            });
-        }
+        let members = JSON.parse(localStorage.getItem('members')) || [];
+        let schedules = JSON.parse(localStorage.getItem('schedules')) || [];
+        let matches = JSON.parse(localStorage.getItem('matches')) || [];
+        let autoSyncEnabled = true;
+        let readOnlyMode = true;
+        let adminPassword = localStorage.getItem('adminPassword') || 'Tayho';
 
         function switchTab(event, tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById(tabName).classList.add('active');
             event.target.classList.add('active');
 
-            if (tabName === 'ranking-money') {
-                updateRankingMoney();
-            } else if (tabName === 'ranking-skill') {
-                updateRankingSkill();
-            } else if (tabName === 'history') {
-                updateHistory();
-            } else if (tabName === 'matches') {
-                updateMatchList();
-            } else if (tabName === 'payment') {
-                updatePaymentList();
+            if (tabName === 'ranking-money') updateRankingMoney();
+            else if (tabName === 'ranking-skill') updateRankingSkill();
+            else if (tabName === 'ranking-score') updateRankingScore();
+            else if (tabName === 'payment') updatePaymentDropdown();
+            else if (tabName === 'settings') updateSettingsUI();
+        }
+
+        function updateSettingsUI() {
+            document.getElementById('modeStatus').textContent = readOnlyMode ? '🔒 Chỉ Xem (Bật)' : '✏️ Chỉnh Sửa (Tạm thời)';
+            document.getElementById('modeStatus').className = readOnlyMode ? 'money negative' : 'money positive';
+            document.getElementById('syncStatus2').textContent = '✓ Tự Động';
+            document.getElementById('syncStatus2').className = 'money positive';
+        }
+
+        function toggleReadOnlyWithPassword() {
+            const pwd = prompt('Nhập mật khẩu admin để tắt chế độ xem (5 phút):');
+            if (!pwd) return;
+            if (pwd !== adminPassword) {
+                showNotification('Mật khẩu sai!', 'error');
+                return;
             }
+            readOnlyMode = false;
+            applyReadOnlyMode();
+            updateSettingsUI();
+            showNotification('✓ Chế độ chỉnh sửa đã bật trong 5 phút', 'success');
+            setTimeout(() => {
+                readOnlyMode = true;
+                applyReadOnlyMode();
+                updateSettingsUI();
+                showNotification('⏱️ Đã quay lại chế độ chỉ xem', 'info');
+                autoSync();
+            }, 300000);
+        }
+
+        function applyReadOnlyMode() {
+            // Chế độ xem: chỉ khóa nút hành động, KHÔNG khóa select / input ngày
+            const disableButtonsText = ['Thêm', 'Ghi', 'Xóa'];
+            const buttons = document.querySelectorAll('.btn');
+
+            buttons.forEach(btn => {
+                const text = btn.textContent || '';
+                const isAction =
+                    disableButtonsText.some(t => text.includes(t)) &&
+                    !text.includes('Tải') && !text.includes('Firebase');
+                if (isAction) {
+                    btn.disabled = readOnlyMode;
+                    btn.style.opacity = readOnlyMode ? '0.5' : '1';
+                    btn.style.cursor = readOnlyMode ? 'not-allowed' : 'pointer';
+                }
+            });
+
+            const deleteButtons = document.querySelectorAll('.delete-btn');
+            deleteButtons.forEach(btn => {
+                btn.disabled = readOnlyMode;
+                btn.style.opacity = readOnlyMode ? '0.5' : '1';
+                btn.style.cursor = readOnlyMode ? 'not-allowed' : 'pointer';
+            });
         }
 
         function addMember() {
             const name = document.getElementById('memberName').value.trim();
             const type = document.getElementById('memberType').value;
-
             if (!name) {
-                showMessage('Vui lòng nhập tên VĐV', 'error');
+                showNotification('Vui lòng nhập tên VĐV', 'error');
                 return;
             }
-
             if (members.some(m => m.name.toLowerCase() === name.toLowerCase())) {
-                showMessage('VĐV này đã có trong danh sách', 'error');
+                showNotification('VĐV này đã có trong danh sách', 'error');
                 return;
             }
-
-            const memberId = 'member_' + Date.now();
-            const memberData = {
-                id: memberId,
-                name: name,
-                type: type,
-                createdAt: new Date().toISOString()
-            };
-
-            console.log('Thêm thành viên:', memberData);
-
-            db.ref(dbPath + '/members/' + memberId).set(memberData)
-                .then(() => {
-                    console.log('✓ Thêm thành công');
-                    showMessage(`✓ Đã thêm VĐV: ${name}`, 'success');
-                    document.getElementById('memberName').value = '';
-                    document.getElementById('memberType').value = 'club';
-                })
-                .catch(error => {
-                    console.error('❌ Lỗi thêm thành viên:', error.code, error.message);
-                    showMessage(`❌ Lỗi: ${error.message}`, 'error');
-                });
+            members.push({ id: Date.now(), name, type });
+            saveData();
+            showNotification(`✓ Đã thêm VĐV: ${name}`, 'success');
+            document.getElementById('memberName').value = '';
+            updateMembersList();
+            updatePairSelects();
+            autoSync();
         }
 
         function deleteMember(id) {
             if (confirm('Xóa VĐV này?')) {
-                db.ref(dbPath + '/members/' + id).remove()
-                    .then(() => {
-                        showMessage('Đã xóa VĐV', 'success');
-                    })
-                    .catch(error => {
-                        showMessage(`❌ Lỗi: ${error.message}`, 'error');
-                    });
+                members = members.filter(m => m.id !== id);
+                saveData();
+                updateMembersList();
+                updatePairSelects();
+                showNotification('Đã xóa VĐV', 'success');
+                autoSync();
             }
         }
 
         function updateMembersList() {
-            const clubList = members.filter(m => m.type === 'club');
-            const guestList = members.filter(m => m.type === 'guest');
-
-            const clubHtml = clubList.length > 0
-                ? clubList.map(member => `
-                    <div class="member-item">
-                        <div>
-                            <div class="member-name">${member.name}</div>
-                            <span class="member-badge">Thành Viên CLB</span>
-                        </div>
-                        <button class="delete-btn btn-small" onclick="deleteMember('${member.id}')">Xóa</button>
-                    </div>
-                `).join('')
-                : '<div class="empty-state"><p>Chưa có thành viên CLB</p></div>';
-
-            const guestHtml = guestList.length > 0
-                ? guestList.map(member => `
-                    <div class="member-item">
-                        <div>
-                            <div class="member-name">${member.name}</div>
-                            <span class="member-badge guest">Khách</span>
-                        </div>
-                        <button class="delete-btn btn-small" onclick="deleteMember('${member.id}')">Xóa</button>
-                    </div>
-                `).join('')
-                : '<div class="empty-state"><p>Chưa có khách</p></div>';
-
-            document.getElementById('clubMembersList').innerHTML = clubHtml;
-            document.getElementById('guestMembersList').innerHTML = guestHtml;
-        }
-
-        function loadPlayerSelects() {
-            const allPlayers = members.map(m => m.name);
-            const selects = ['pair1vdv1', 'pair1vdv2', 'pair2vdv1', 'pair2vdv2'];
-            const selectedValues = {};
-
-            selects.forEach(id => {
-                const elem = document.getElementById(id);
-                selectedValues[id] = elem.value;
-                elem.innerHTML = '<option value="">-- Chọn --</option>';
-                allPlayers.forEach(player => {
-                    elem.innerHTML += `<option value="${player}">${player}</option>`;
-                });
-                if (selectedValues[id]) elem.value = selectedValues[id];
-            });
-        }
-
-        function loadSchedules() {
-            const eventDateSelect = document.getElementById('eventDate');
-            const paymentDateSelect = document.getElementById('paymentDate');
-            const selectedDate = eventDateSelect.value;
-            const selectedPaymentDate = paymentDateSelect.value;
-
-            eventDateSelect.innerHTML = '<option value="">-- Chọn ngày --</option>';
-            paymentDateSelect.innerHTML = '<option value="">-- Chọn ngày --</option>';
-            
-            scheduleList.forEach(schedule => {
-                const dateStr = new Date(schedule.date).toLocaleDateString('vi-VN');
-                const note = schedule.note ? ` (${schedule.note})` : '';
-                eventDateSelect.innerHTML += `<option value="${schedule.date}">${dateStr}${note}</option>`;
-                paymentDateSelect.innerHTML += `<option value="${schedule.date}">${dateStr}${note}</option>`;
-            });
-
-            if (selectedDate) eventDateSelect.value = selectedDate;
-            if (selectedPaymentDate) paymentDateSelect.value = selectedPaymentDate;
-            updateScheduleList();
+            const html = members.map(m => `
+                <div class="member-item">
+                    <div><div class="member-name">${m.name}<span class="member-badge ${m.type === 'guest' ? 'guest' : ''}">${m.type === 'club' ? 'Thành Viên' : 'Khách'}</span></div></div>
+                    <button class="delete-btn" onclick="deleteMember(${m.id})">Xóa</button>
+                </div>
+            `).join('') || '<div class="empty-state"><p>Chưa có thành viên</p></div>';
+            document.getElementById('membersList').innerHTML = html;
         }
 
         function addSchedule() {
-            const date = document.getElementById('scheduleDate').value;
+            const dateInput = document.getElementById('scheduleDate').value.trim();
             const note = document.getElementById('scheduleNote').value.trim();
-
-            if (!date) {
-                showMessage('Vui lòng chọn ngày', 'error');
+            if (!dateInput) {
+                showNotification('Vui lòng nhập ngày', 'error');
                 return;
             }
-
-            if (scheduleList.some(s => s.date === date)) {
-                showMessage('Ngày này đã có trong lịch', 'error');
+            const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+            const match = dateInput.match(dateRegex);
+            if (!match) {
+                showNotification('Định dạng ngày không hợp lệ (dd/mm/yyyy)', 'error');
                 return;
             }
-
-            const scheduleId = 'schedule_' + Date.now();
-            const scheduleData = { 
-                id: scheduleId, 
-                date, 
-                note,
-                createdAt: new Date().toISOString()
-            };
-
-            console.log('Thêm lịch sinh hoạt:', scheduleData);
-
-            db.ref(dbPath + '/scheduleList/' + scheduleId).set(scheduleData)
-                .then(() => {
-                    console.log('✓ Thêm lịch thành công');
-                    showMessage('✓ Đã thêm ngày sinh hoạt', 'success');
-                    document.getElementById('scheduleDate').value = '';
-                    document.getElementById('scheduleNote').value = '';
-                })
-                .catch(error => {
-                    console.error('❌ Lỗi thêm lịch:', error.code, error.message);
-                    showMessage(`❌ Lỗi: ${error.message}`, 'error');
-                });
+            const [_, day, month, year] = match;
+            const date = `${year}-${month}-${day}`;
+            if (schedules.some(s => s.date === date)) {
+                showNotification('Ngày này đã có trong lịch', 'error');
+                return;
+            }
+            schedules.push({ id: Date.now(), date, note, displayDate: dateInput });
+            schedules.sort((a, b) => new Date(a.date) - new Date(b.date));
+            saveData();
+            showNotification('✓ Đã thêm ngày sinh hoạt', 'success');
+            document.getElementById('scheduleDate').value = '';
+            document.getElementById('scheduleNote').value = '';
+            updateScheduleList();
+            updateScheduleSelects();
+            autoSync();
         }
 
         function deleteSchedule(id) {
             if (confirm('Xóa ngày sinh hoạt này?')) {
-                db.ref(dbPath + '/scheduleList/' + id).remove()
-                    .then(() => {
-                        showMessage('Đã xóa ngày sinh hoạt', 'success');
-                    })
-                    .catch(error => {
-                        showMessage(`❌ Lỗi: ${error.message}`, 'error');
-                    });
+                schedules = schedules.filter(s => s.id !== id);
+                saveData();
+                updateScheduleList();
+                updateScheduleSelects();
+                showNotification('Đã xóa ngày sinh hoạt', 'success');
+                autoSync();
             }
         }
 
         function updateScheduleList() {
-            const scheduleListDiv = document.getElementById('scheduleList');
-            if (scheduleList.length === 0) {
-                scheduleListDiv.innerHTML = '<div class="empty-state"><p>Chưa có lịch sinh hoạt</p></div>';
-                return;
-            }
-
-            scheduleListDiv.innerHTML = scheduleList.map(schedule => {
-                const dateStr = new Date(schedule.date).toLocaleDateString('vi-VN');
-                const matches = allMatches.filter(m => m.date === schedule.date).length;
+            const html = schedules.map(s => {
+                const dateStr = s.displayDate || new Date(s.date).toLocaleDateString('vi-VN');
+                const matchCount = matches.filter(m => m.date === s.date).length;
                 return `
                     <div class="match-item">
                         <div class="match-info">
                             <div class="match-players"><strong>${dateStr}</strong></div>
-                            <div class="match-score">${schedule.note || 'Không có ghi chú'} • ${matches} trận</div>
+                            <div class="match-score">${s.note || 'Không có ghi chú'} • ${matchCount} trận</div>
                         </div>
-                        <button class="delete-btn" onclick="deleteSchedule('${schedule.id}')">Xóa</button>
+                        <button class="delete-btn" onclick="deleteSchedule(${s.id})">Xóa</button>
                     </div>
                 `;
-            }).join('');
+            }).join('') || '<div class="empty-state"><p>Chưa có lịch sinh hoạt</p></div>';
+            document.getElementById('scheduleList').innerHTML = html;
         }
 
-        function addDoublesMatch() {
-            const pair1vdv1 = document.getElementById('pair1vdv1').value;
-            const pair1vdv2 = document.getElementById('pair1vdv2').value;
-            const pair2vdv1 = document.getElementById('pair2vdv1').value;
-            const pair2vdv2 = document.getElementById('pair2vdv2').value;
-            const score1 = parseInt(document.getElementById('pairScore1').value) || 0;
-            const score2 = parseInt(document.getElementById('pairScore2').value) || 0;
-            const eventDate = document.getElementById('eventDate').value;
+        function updateScheduleSelects() {
+            const select = document.getElementById('eventDate');
+            const value = select.value;
+            select.innerHTML = '<option value="">-- Chọn ngày --</option>' +
+                schedules.map(s => `<option value="${s.date}">${s.displayDate || new Date(s.date).toLocaleDateString('vi-VN')}${s.note ? ` (${s.note})` : ''}</option>`).join('');
+            if (value) select.value = value;
+            updatePaymentDropdown();
+        }
 
-            if (!pair1vdv1 || !pair1vdv2 || !pair2vdv1 || !pair2vdv2) {
-                showMessage('Vui lòng chọn đủ 4 VĐV', 'error');
+        function updatePaymentDropdown() {
+            const select = document.getElementById('paymentDate');
+            const value = select.value;
+            select.innerHTML = '<option value="">-- Chọn ngày --</option>' +
+                schedules.map(s => `<option value="${s.date}">${s.displayDate || new Date(s.date).toLocaleDateString('vi-VN')}${s.note ? ` (${s.note})` : ''}</option>`).join('');
+            if (value) select.value = value;
+        }
+
+        function updatePairSelects() {
+            const playerNames = members.map(m => m.name);
+            const selectIds = ['pair1a', 'pair1b', 'pair2a', 'pair2b'];
+            selectIds.forEach(id => {
+                const elem = document.getElementById(id);
+                const value = elem.value;
+                elem.innerHTML = '<option value="">-- Chọn --</option>' + playerNames.map(p => `<option value="${p}">${p}</option>`).join('');
+                if (value) elem.value = value;
+            });
+        }
+
+        function updateMatchForm() {
+            if (!document.getElementById('eventDate').value) return;
+        }
+
+        function addMatch() {
+            const date = document.getElementById('eventDate').value;
+            const p1a = document.getElementById('pair1a').value;
+            const p1b = document.getElementById('pair1b').value;
+            const p2a = document.getElementById('pair2a').value;
+            const p2b = document.getElementById('pair2b').value;
+            const score1 = parseInt(document.getElementById('score1').value) || 0;
+            const score2 = parseInt(document.getElementById('score2').value) || 0;
+
+            if (!date) {
+                showNotification('Vui lòng chọn ngày sinh hoạt', 'error');
+                return;
+            }
+            if (!p1a || !p1b || !p2a || !p2b) {
+                showNotification('Vui lòng chọn đủ 4 VĐV', 'error');
+                return;
+            }
+            const allPlayers = [p1a, p1b, p2a, p2b];
+            if (new Set(allPlayers).size !== 4) {
+                showNotification('Các VĐV không được trùng nhau', 'error');
                 return;
             }
 
-            const allVdv = [pair1vdv1, pair1vdv2, pair2vdv1, pair2vdv2];
-            if (new Set(allVdv).size !== 4) {
-                showMessage('Các VĐV không được trùng nhau', 'error');
-                return;
-            }
+            const pair1 = `${p1a} - ${p1b}`;
+            const pair2 = `${p2a} - ${p2b}`;
 
-            if (score1 === 0 && score2 === 0) {
-                showMessage('Vui lòng nhập điểm số', 'error');
-                return;
-            }
-
-            if (!eventDate) {
-                showMessage('Vui lòng chọn ngày sinh hoạt', 'error');
-                return;
-            }
-
-            const matchId = 'match_' + Date.now();
-            const match = {
-                id: matchId,
-                pair1: [pair1vdv1, pair1vdv2],
-                pair2: [pair2vdv1, pair2vdv2],
-                score1: score1,
-                score2: score2,
-                date: eventDate,
+            matches.push({
+                id: Date.now(),
+                date,
+                pair1,
+                pair2,
+                score1,
+                score2,
                 result1: score1 > score2 ? 'win' : 'lose',
-                result2: score2 > score1 ? 'win' : 'lose',
-                createdAt: new Date().toISOString()
-            };
+                result2: score2 > score1 ? 'win' : 'lose'
+            });
 
-            db.ref(dbPath + '/allMatches/' + matchId).set(match)
-                .then(() => {
-                    showMessage(`✓ Thêm trận: (${pair1vdv1}+${pair1vdv2}) ${score1} - ${score2} (${pair2vdv1}+${pair2vdv2})`, 'success');
-                    document.getElementById('pairScore1').value = '';
-                    document.getElementById('pairScore2').value = '';
-                    document.getElementById('pair1vdv1').value = '';
-                    document.getElementById('pair1vdv2').value = '';
-                    document.getElementById('pair2vdv1').value = '';
-                    document.getElementById('pair2vdv2').value = '';
-                })
-                .catch(error => {
-                    console.error('Lỗi:', error);
-                    showMessage(`❌ Lỗi: ${error.message}`, 'error');
-                });
+            saveData();
+            showNotification(`✓ Thêm trận: ${pair1} ${score1} - ${score2} ${pair2}`, 'success');
+            document.getElementById('score1').value = '';
+            document.getElementById('score2').value = '';
+            document.getElementById('pair1a').value = '';
+            document.getElementById('pair1b').value = '';
+            document.getElementById('pair2a').value = '';
+            document.getElementById('pair2b').value = '';
+            updateMatchList();
+            updatePaymentList();
+            autoSync();
         }
 
         function updateMatchList() {
-            const eventDate = document.getElementById('eventDate').value;
-            const todayMatches = allMatches.filter(m => m.date === eventDate).reverse();
-
-            const matchList = document.getElementById('matchList');
-            const dailyTotalDiv = document.getElementById('dailyTotal');
-
-            if (todayMatches.length === 0) {
-                matchList.innerHTML = '<div class="empty-state"><p>Chưa có trận đấu hôm nay</p></div>';
-                dailyTotalDiv.textContent = '0k';
-                return;
-            }
-
-            const dailyMoney = {};
-            todayMatches.forEach(match => {
-                if (match.pair1) {
-                    const winners = match.result1 === 'win' ? match.pair1 : match.pair2;
-                    const losers = match.result1 === 'win' ? match.pair2 : match.pair1;
-                    winners.forEach(vdv => {
-                        dailyMoney[vdv] = (dailyMoney[vdv] || 0) + 50000;
-                    });
-                    losers.forEach(vdv => {
-                        dailyMoney[vdv] = (dailyMoney[vdv] || 0) - 50000;
-                    });
-                }
-            });
-
-            const totalToday = Object.values(dailyMoney).reduce((a, b) => a + b, 0);
-            dailyTotalDiv.textContent = totalToday >= 0 ? `+${(totalToday / 1000).toFixed(0)}k` : `${(totalToday / 1000).toFixed(0)}k`;
-
-            matchList.innerHTML = todayMatches.map(match => {
-                if (match.pair1) {
-                    const result1 = match.result1 === 'win' ? '✓ Thắng' : '✗ Thua';
-                    const result2 = match.result2 === 'win' ? '✓ Thắng' : '✗ Thua';
-                    return `
-                        <div class="match-item">
-                            <div class="match-info">
-                                <div class="match-players">(${match.pair1[0]}+${match.pair1[1]}) <strong>${match.score1}</strong> <span style="color: #626c7c;">vs</span> <strong>${match.score2}</strong> (${match.pair2[0]}+${match.pair2[1]})</div>
-                                <div class="match-score">
-                                    <span class="${match.result1 === 'win' ? 'win' : 'loss'}">${result1}</span>
-                                    <span style="color: #626c7c;"> / </span>
-                                    <span class="${match.result2 === 'win' ? 'win' : 'loss'}">${result2}</span>
-                                </div>
-                            </div>
-                            <button class="delete-btn" onclick="deleteMatch('${match.id}')">Xóa</button>
-                        </div>
-                    `;
-                }
-                return '';
-            }).join('');
-        }
-
-        function updatePaymentList() {
-            const paymentDate = document.getElementById('paymentDate').value;
-            const paymentDateDisplay = document.getElementById('paymentDateDisplay');
-            const paymentList = document.getElementById('paymentList');
-
-            if (!paymentDate) {
-                paymentDateDisplay.textContent = '';
-                paymentList.innerHTML = '<div class="empty-state"><p>Vui lòng chọn ngày sinh hoạt</p></div>';
-                return;
-            }
-
-            const dayMatches = allMatches.filter(m => m.date === paymentDate);
-
-            if (dayMatches.length === 0) {
-                const dateStr = new Date(paymentDate).toLocaleDateString('vi-VN');
-                paymentDateDisplay.textContent = `📅 ${dateStr} - Chưa có trận đấu`;
-                paymentList.innerHTML = '<div class="empty-state"><p>Không có dữ liệu trận đấu</p></div>';
-                return;
-            }
-
-            const playerMoney = {};
-            dayMatches.forEach(match => {
-                if (match.pair1) {
-                    const winners = match.result1 === 'win' ? match.pair1 : match.pair2;
-                    const losers = match.result1 === 'win' ? match.pair2 : match.pair1;
-                    winners.forEach(vdv => {
-                        playerMoney[vdv] = (playerMoney[vdv] || 0) + 50000;
-                    });
-                    losers.forEach(vdv => {
-                        playerMoney[vdv] = (playerMoney[vdv] || 0) - 50000;
-                    });
-                }
-            });
-
-            const sortedPlayers = Object.entries(playerMoney)
-                .sort((a, b) => a[1] - b[1]);
-
-            const dateStr = new Date(paymentDate).toLocaleDateString('vi-VN');
-            paymentDateDisplay.textContent = `💳 Ngày ${dateStr}`;
-
-            const totalAmount = Object.values(playerMoney).reduce((a, b) => a + b, 0);
-
-            let html = '';
-            sortedPlayers.forEach(([player, amount]) => {
-                const isPayment = amount < 0;
-                const displayAmount = Math.abs(amount);
-                html += `
-                    <div class="payment-item">
-                        <div class="payment-name">${player}</div>
-                        <div class="payment-amount">
-                            <span class="money ${isPayment ? 'negative' : 'positive'}">
-                                ${isPayment ? '-' : '+'}${(displayAmount / 1000).toFixed(0)}k
-                            </span>
-                        </div>
+            const dateFilter = document.getElementById('eventDate').value;
+            const filtered = dateFilter ? matches.filter(m => m.date === dateFilter) : matches;
+            const html = filtered.slice().reverse().map(m => `
+                <div class="match-item">
+                    <div class="match-info">
+                        <div class="match-players">${m.pair1} <strong>${m.score1}</strong> - <strong>${m.score2}</strong> ${m.pair2}</div>
+                        <div class="match-score">${m.date}</div>
                     </div>
-                `;
-            });
-
-            html += `
-                <div class="total-payment">
-                    <div class="total-payment-label">Tổng Cộng Trong Ngày</div>
-                    <div class="total-payment-value">${totalAmount >= 0 ? '+' : ''}${(totalAmount / 1000).toFixed(0)}k</div>
+                    <button class="delete-btn" onclick="deleteMatch(${m.id})">Xóa</button>
                 </div>
-            `;
-
-            paymentList.innerHTML = html;
+            `).join('') || '<div class="empty-state"><p>Chưa có trận đấu</p></div>';
+            document.getElementById('matchList').innerHTML = html;
         }
 
         function deleteMatch(id) {
             if (confirm('Xóa trận đấu này?')) {
-                db.ref(dbPath + '/allMatches/' + id).remove()
-                    .then(() => {
-                        showMessage('Đã xóa trận đấu', 'success');
-                    })
-                    .catch(error => {
-                        showMessage(`❌ Lỗi: ${error.message}`, 'error');
-                    });
+                matches = matches.filter(m => m.id !== id);
+                saveData();
+                updateMatchList();
+                updatePaymentList();
+                showNotification('Đã xóa trận đấu', 'success');
+                autoSync();
             }
+        }
+
+        function updatePaymentList() {
+            const date = document.getElementById('paymentDate').value;
+            if (!date) {
+                document.getElementById('paymentList').innerHTML = '<div class="empty-state"><p>Vui lòng chọn ngày</p></div>';
+                return;
+            }
+
+            const dayMatches = matches.filter(m => m.date === date);
+            const playerMoney = {};
+
+            dayMatches.forEach(m => {
+                const [p1a, p1b] = m.pair1.split(' - ').map(x => x.trim());
+                const [p2a, p2b] = m.pair2.split(' - ').map(x => x.trim());
+
+                if (m.result1 === 'win') {
+                    playerMoney[p1a] = (playerMoney[p1a] || 0) + 50;
+                    playerMoney[p1b] = (playerMoney[p1b] || 0) + 50;
+                    playerMoney[p2a] = (playerMoney[p2a] || 0) - 50;
+                    playerMoney[p2b] = (playerMoney[p2b] || 0) - 50;
+                } else {
+                    playerMoney[p2a] = (playerMoney[p2a] || 0) + 50;
+                    playerMoney[p2b] = (playerMoney[p2b] || 0) + 50;
+                    playerMoney[p1a] = (playerMoney[p1a] || 0) - 50;
+                    playerMoney[p1b] = (playerMoney[p1b] || 0) - 50;
+                }
+            });
+
+            if (Object.keys(playerMoney).length === 0) {
+                document.getElementById('paymentList').innerHTML = '<div class="empty-state"><p>Chưa có trận đấu ngày này</p></div>';
+                return;
+            }
+
+            const sorted = Object.entries(playerMoney).sort((a, b) => a[1] - b[1]);
+            const total = Object.values(playerMoney).reduce((a, b) => a + b, 0);
+
+            let html = `<div class="payment-date-header">📅 ${new Date(date).toLocaleDateString('vi-VN')}</div>`;
+            html += sorted.map(([name, amount]) => `
+                <div class="payment-item">
+                    <div class="payment-name">${name}</div>
+                    <div><span class="money ${amount < 0 ? 'negative' : 'positive'}">${amount < 0 ? '-' : '+'}${Math.abs(amount)}k</span></div>
+                </div>
+            `).join('');
+            html += `<div class="total-payment"><div class="total-payment-label">Tổng Cộng</div><div class="total-payment-value">${total >= 0 ? '+' : ''}${total}k</div></div>`;
+
+            document.getElementById('paymentList').innerHTML = html;
         }
 
         function updateRankingMoney() {
-            const stats = {};
+            const currentYear = new Date().getFullYear();
+            const playerMoney = {};
 
-            allMatches.forEach(match => {
-                [match.pair1[0], match.pair1[1]].forEach(p => {
-                    if (!stats[p]) stats[p] = { wins: 0, losses: 0, money: 0 };
-                });
-                [match.pair2[0], match.pair2[1]].forEach(p => {
-                    if (!stats[p]) stats[p] = { wins: 0, losses: 0, money: 0 };
-                });
+            matches.forEach(m => {
+                if (new Date(m.date).getFullYear() !== currentYear) return;
+                const [p1a, p1b] = m.pair1.split(' - ').map(x => x.trim());
+                const [p2a, p2b] = m.pair2.split(' - ').map(x => x.trim());
 
-                if (match.result1 === 'win') {
-                    [match.pair1[0], match.pair1[1]].forEach(p => {
-                        stats[p].wins++;
-                        stats[p].money += 50000;
-                    });
-                    [match.pair2[0], match.pair2[1]].forEach(p => {
-                        stats[p].losses++;
-                        stats[p].money -= 50000;
-                    });
+                if (m.result1 === 'win') {
+                    playerMoney[p1a] = (playerMoney[p1a] || { money: 0, matches: 0 });
+                    playerMoney[p1b] = (playerMoney[p1b] || { money: 0, matches: 0 });
+                    playerMoney[p1a].money += 50;
+                    playerMoney[p1b].money += 50;
+                    playerMoney[p1a].matches++;
+                    playerMoney[p1b].matches++;
+                    playerMoney[p2a] = (playerMoney[p2a] || { money: 0, matches: 0 });
+                    playerMoney[p2b] = (playerMoney[p2b] || { money: 0, matches: 0 });
+                    playerMoney[p2a].money -= 50;
+                    playerMoney[p2b].money -= 50;
+                    playerMoney[p2a].matches++;
+                    playerMoney[p2b].matches++;
                 } else {
-                    [match.pair2[0], match.pair2[1]].forEach(p => {
-                        stats[p].wins++;
-                        stats[p].money += 50000;
-                    });
-                    [match.pair1[0], match.pair1[1]].forEach(p => {
-                        stats[p].losses++;
-                        stats[p].money -= 50000;
-                    });
+                    playerMoney[p2a] = (playerMoney[p2a] || { money: 0, matches: 0 });
+                    playerMoney[p2b] = (playerMoney[p2b] || { money: 0, matches: 0 });
+                    playerMoney[p2a].money += 50;
+                    playerMoney[p2b].money += 50;
+                    playerMoney[p2a].matches++;
+                    playerMoney[p2b].matches++;
+                    playerMoney[p1a] = (playerMoney[p1a] || { money: 0, matches: 0 });
+                    playerMoney[p1b] = (playerMoney[p1b] || { money: 0, matches: 0 });
+                    playerMoney[p1a].money -= 50;
+                    playerMoney[p1b].money -= 50;
+                    playerMoney[p1a].matches++;
+                    playerMoney[p1b].matches++;
                 }
             });
 
-            const ranking = Object.entries(stats)
-                .map(([name, data]) => ({ name, ...data }))
-                .sort((a, b) => b.money - a.money);
+            const sorted = Object.entries(playerMoney).sort((a, b) => b[1].money - a[1].money);
+            const tbody = document.getElementById('rankingMoneyBody');
 
-            const totalStats = ranking.reduce((acc, r) => ({
-                totalWins: acc.totalWins + r.wins,
-                totalLosses: acc.totalLosses + r.losses,
-                totalMoney: acc.totalMoney + r.money
-            }), { totalWins: 0, totalLosses: 0, totalMoney: 0 });
-
-            let summaryHtml = `
-                <div class="summary-card">
-                    <div class="summary-label">Tổng Trận Thắng</div>
-                    <div class="summary-value">${totalStats.totalWins}</div>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-label">Tổng Trận Thua</div>
-                    <div class="summary-value">${totalStats.totalLosses}</div>
-                </div>
-            `;
-            document.getElementById('summary').innerHTML = summaryHtml;
-
-            if (ranking.length > 0) {
-                let rankingHtml = ranking.map((r, i) => `
-                    <tr>
-                        <td><span class="rank-badge rank-${i + 1}">${i + 1}</span></td>
-                        <td>${r.name}</td>
-                        <td><span class="win">${r.wins}</span> / <span class="loss">${r.losses}</span></td>
-                        <td><span class="money ${r.money >= 0 ? 'positive' : 'negative'}">${r.money >= 0 ? '+' : ''}${(r.money / 1000).toFixed(0)}k</span></td>
-                    </tr>
-                `).join('');
-                document.getElementById('rankingBodyMoney').innerHTML = rankingHtml;
-            } else {
-                document.getElementById('rankingBodyMoney').innerHTML = '<tr><td colspan="4" class="empty-state"><p>Chưa có dữ liệu</p></td></tr>';
+            if (sorted.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Chưa có dữ liệu</td></tr>';
+                return;
             }
+
+            tbody.innerHTML = sorted.map(([name, data], i) => `
+                <tr>
+                    <td><span class="rank-badge ${i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : ''}">${i + 1}</span></td>
+                    <td>${name}</td>
+                    <td>${data.matches}</td>
+                    <td><span class="money ${data.money >= 0 ? 'positive' : 'negative'}">${data.money >= 0 ? '+' : ''}${data.money}k</span></td>
+                </tr>
+            `).join('');
         }
 
         function updateRankingSkill() {
-            const stats = {};
+            const playerStats = {};
 
-            allMatches.forEach(match => {
-                [match.pair1[0], match.pair1[1]].forEach(p => {
-                    if (!stats[p]) stats[p] = { wins: 0, losses: 0 };
-                });
-                [match.pair2[0], match.pair2[1]].forEach(p => {
-                    if (!stats[p]) stats[p] = { wins: 0, losses: 0 };
-                });
+            matches.forEach(m => {
+                const [p1a, p1b] = m.pair1.split(' - ').map(x => x.trim());
+                const [p2a, p2b] = m.pair2.split(' - ').map(x => x.trim());
 
-                if (match.result1 === 'win') {
-                    [match.pair1[0], match.pair1[1]].forEach(p => stats[p].wins++);
-                    [match.pair2[0], match.pair2[1]].forEach(p => stats[p].losses++);
+                [p1a, p1b, p2a, p2b].forEach(name => {
+                    if (!playerStats[name]) playerStats[name] = { wins: 0, matches: 0 };
+                    playerStats[name].matches++;
+                    if ((m.pair1.includes(name) && m.result1 === 'win') || (m.pair2.includes(name) && m.result2 === 'win')) {
+                        playerStats[name].wins++;
+                    }
+                });
+            });
+
+            const filtered = Object.entries(playerStats)
+                .filter(([_, s]) => s.matches >= 5)
+                .sort((a, b) => (b[1].wins / b[1].matches) - (a[1].wins / a[1].matches));
+
+            const tbody = document.getElementById('rankingSkillBody');
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Chưa có VĐV ≥5 trận</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(([name, stats], i) => {
+                const wr = ((stats.wins / stats.matches) * 100).toFixed(1);
+                return `
+                    <tr>
+                        <td><span class="rank-badge ${i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : ''}">${i + 1}</span></td>
+                        <td>${name}</td>
+                        <td>${stats.matches}</td>
+                        <td>${wr}%</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateRankingScore() {
+            const playerScore = {};
+
+            matches.forEach(m => {
+                const [p1a, p1b] = m.pair1.split(' - ').map(x => x.trim());
+                const [p2a, p2b] = m.pair2.split(' - ').map(x => x.trim());
+
+                if (m.result1 === 'win') {
+                    playerScore[p1a] = (playerScore[p1a] || { score: 0, wins: 0, losses: 0, totalScore1: 0, totalScore2: 0 });
+                    playerScore[p1b] = (playerScore[p1b] || { score: 0, wins: 0, losses: 0, totalScore1: 0, totalScore2: 0 });
+                    playerScore[p1a].score += 1;
+                    playerScore[p1b].score += 1;
+                    playerScore[p1a].wins++;
+                    playerScore[p1b].wins++;
+                    playerScore[p1a].totalScore1 += m.score1;
+                    playerScore[p1b].totalScore1 += m.score1;
+                    playerScore[p1a].totalScore2 += m.score2;
+                    playerScore[p1b].totalScore2 += m.score2;
+                    playerScore[p2a] = (playerScore[p2a] || { score: 0, wins: 0, losses: 0, totalScore1: 0, totalScore2: 0 });
+                    playerScore[p2b] = (playerScore[p2b] || { score: 0, wins: 0, losses: 0, totalScore1: 0, totalScore2: 0 });
+                    playerScore[p2a].score -= 1;
+                    playerScore[p2b].score -= 1;
+                    playerScore[p2a].losses++;
+                    playerScore[p2b].losses++;
+                    playerScore[p2a].totalScore1 += m.score2;
+                    playerScore[p2b].totalScore1 += m.score2;
+                    playerScore[p2a].totalScore2 += m.score1;
+                    playerScore[p2b].totalScore2 += m.score1;
                 } else {
-                    [match.pair2[0], match.pair2[1]].forEach(p => stats[p].wins++);
-                    [match.pair1[0], match.pair1[1]].forEach(p => stats[p].losses++);
+                    playerScore[p2a] = (playerScore[p2a] || { score: 0, wins: 0, losses: 0, totalScore1: 0, totalScore2: 0 });
+                    playerScore[p2b] = (playerScore[p2b] || { score: 0, wins: 0, losses: 0, totalScore1: 0, totalScore2: 0 });
+                    playerScore[p2a].score += 1;
+                    playerScore[p2b].score += 1;
+                    playerScore[p2a].wins++;
+                    playerScore[p2b].wins++;
+                    playerScore[p2a].totalScore1 += m.score2;
+                    playerScore[p2b].totalScore1 += m.score2;
+                    playerScore[p2a].totalScore2 += m.score1;
+                    playerScore[p2b].totalScore2 += m.score1;
+                    playerScore[p1a] = (playerScore[p1a] || { score: 0, wins: 0, losses: 0, totalScore1: 0, totalScore2: 0 });
+                    playerScore[p1b] = (playerScore[p1b] || { score: 0, wins: 0, losses: 0, totalScore1: 0, totalScore2: 0 });
+                    playerScore[p1a].score -= 1;
+                    playerScore[p1b].score -= 1;
+                    playerScore[p1a].losses++;
+                    playerScore[p1b].losses++;
+                    playerScore[p1a].totalScore1 += m.score1;
+                    playerScore[p1b].totalScore1 += m.score1;
+                    playerScore[p1a].totalScore2 += m.score2;
+                    playerScore[p1b].totalScore2 += m.score2;
                 }
             });
 
-            const ranking = Object.entries(stats)
-                .filter(([name, data]) => (data.wins + data.losses) >= 5)
-                .map(([name, data]) => ({
-                    name,
-                    matches: data.wins + data.losses,
-                    winRate: ((data.wins / (data.wins + data.losses)) * 100).toFixed(1)
-                }))
-                .sort((a, b) => parseFloat(b.winRate) - parseFloat(a.winRate));
+            const sorted = Object.entries(playerScore).sort((a, b) => b[1].score - a[1].score);
+            const tbody = document.getElementById('rankingScoreBody');
 
-            if (ranking.length > 0) {
-                let rankingHtml = ranking.map((r, i) => `
-                    <tr>
-                        <td><span class="rank-badge rank-${i + 1}">${i + 1}</span></td>
-                        <td>${r.name}</td>
-                        <td>${r.matches}</td>
-                        <td>${r.winRate}%</td>
-                    </tr>
-                `).join('');
-                document.getElementById('rankingBodySkill').innerHTML = rankingHtml;
-            } else {
-                document.getElementById('rankingBodySkill').innerHTML = '<tr><td colspan="4" class="empty-state"><p>Chưa có VĐV thi đấu ≥5 trận</p></td></tr>';
-            }
-        }
-
-        function updateHistory() {
-            const historyList = document.getElementById('historyList');
-            
-            if (allMatches.length === 0) {
-                historyList.innerHTML = '<div class="empty-state"><p>Chưa có lịch sử trận đấu</p></div>';
+            if (sorted.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Chưa có dữ liệu</td></tr>';
                 return;
             }
 
-            const sortedMatches = [...allMatches].sort((a, b) => new Date(b.date) - new Date(a.date));
-
-            let historyHtml = sortedMatches.map(m => {
-                const dateStr = new Date(m.date).toLocaleDateString('vi-VN');
-                const result1 = m.result1 === 'win' ? '✓ Thắng' : '✗ Thua';
-                const result2 = m.result2 === 'win' ? '✓ Thắng' : '✗ Thua';
+            tbody.innerHTML = sorted.map(([name, data], i) => {
+                const scoreDiff = data.totalScore1 - data.totalScore2;
                 return `
-                    <div class="match-item">
-                        <div class="match-info">
-                            <div class="match-players">(${m.pair1[0]}+${m.pair1[1]}) <strong>${m.score1}</strong> vs <strong>${m.score2}</strong> (${m.pair2[0]}+${m.pair2[1]})</div>
-                            <div class="match-score">${dateStr} • ${result1} / ${result2}</div>
-                        </div>
-                        <button class="delete-btn" onclick="deleteMatch('${m.id}')">Xóa</button>
-                    </div>
+                    <tr>
+                        <td><span class="rank-badge ${i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : ''}">${i + 1}</span></td>
+                        <td>${name}</td>
+                        <td>${data.wins}/${data.losses}</td>
+                        <td><span class="money ${data.score >= 0 ? 'positive' : 'negative'}">${data.score >= 0 ? '+' : ''}${data.score}đ</span></td>
+                        <td><span class="money ${scoreDiff >= 0 ? 'positive' : 'negative'}">${scoreDiff >= 0 ? '+' : ''}${scoreDiff}</span></td>
+                    </tr>
                 `;
             }).join('');
-
-            historyList.innerHTML = historyHtml;
         }
 
-        function exportData() {
-            const data = {
-                members: members,
-                allMatches: allMatches,
-                scheduleList: scheduleList,
-                exportDate: new Date().toLocaleString('vi-VN')
-            };
+        async function manualSaveFirebase() {
+            setSyncLoading(true);
+            try {
+                await set(ref(database, 'pickleball'), { 
+                    members, 
+                    schedules, 
+                    matches, 
+                    adminPassword,
+                    readOnlyMode: true,
+                    lastSync: new Date().toISOString() 
+                });
+                setSyncLoading(false);
+                showNotification('✅ Lưu Firebase thành công!', 'success');
+            } catch (e) {
+                setSyncLoading(false);
+                showNotification('❌ Lưu thất bại', 'error');
+            }
+        }
 
-            const dataStr = JSON.stringify(data, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
+        async function manualLoadFirebase() {
+            setSyncLoading(true);
+            try {
+                const snapshot = await get(ref(database, 'pickleball'));
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    members = data.members || [];
+                    schedules = data.schedules || [];
+                    matches = data.matches || [];
+                    adminPassword = data.adminPassword || 'Tayho';
+                    saveData();
+                    localStorage.setItem('adminPassword', adminPassword);
+                    updateMembersList();
+                    updatePairSelects();
+                    updateScheduleList();
+                    updateScheduleSelects();
+                    updateMatchList();
+                    applyReadOnlyMode();
+                    updateSettingsUI();
+                    setSyncLoading(false);
+                    showNotification('✅ Tải Firebase thành công!', 'success');
+                } else {
+                    setSyncLoading(false);
+                    showNotification('⚠️ Không có dữ liệu', 'info');
+                }
+            } catch (e) {
+                setSyncLoading(false);
+                showNotification('❌ Tải thất bại', 'error');
+            }
+        }
+
+        async function autoSync() {
+            try {
+                await set(ref(database, 'pickleball'), { 
+                    members, 
+                    schedules, 
+                    matches, 
+                    adminPassword,
+                    readOnlyMode: true,
+                    lastSync: new Date().toISOString() 
+                });
+            } catch (e) {}
+        }
+
+        function setSyncLoading(loading) {
+            const status = document.getElementById('syncStatus');
+            const text = document.getElementById('syncText');
+            if (loading) {
+                status.classList.add('loading');
+                text.textContent = 'Đang đồng bộ...';
+            } else {
+                status.classList.remove('loading');
+                text.textContent = 'Sẵn sàng đồng bộ';
+            }
+        }
+
+        window.toggleAutoSync = function() {
+            showNotification('✅ Tự động đồng bộ luôn bật', 'info');
+        };
+
+        window.toggleReadOnlyWithPassword = toggleReadOnlyWithPassword;
+        window.manualSaveFirebase = manualSaveFirebase;
+        window.manualLoadFirebase = manualLoadFirebase;
+        window.switchTab = switchTab;
+        window.addMember = addMember;
+        window.deleteMember = deleteMember;
+        window.addSchedule = addSchedule;
+        window.deleteSchedule = deleteSchedule;
+        window.updateMatchForm = updateMatchForm;
+        window.addMatch = addMatch;
+        window.deleteMatch = deleteMatch;
+        window.updatePaymentList = updatePaymentList;
+
+        window.exportData = function() {
+            const data = JSON.stringify({ members, schedules, matches }, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `pickleball_backup_${Date.now()}.json`;
-            link.click();
-            showMessage('✓ Đã tải về file backup', 'success');
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'pickleball-data.json';
+            a.click();
+            showNotification('✅ Tải về thành công!', 'success');
+        };
+
+        window.clearAllData = function() {
+            if (!confirm('⚠️ Xóa tất cả? (không thể hoàn tác)')) return;
+            members = [];
+            schedules = [];
+            matches = [];
+            saveData();
+            updateMembersList();
+            updateScheduleList();
+            updateMatchList();
+            document.getElementById('paymentList').innerHTML = '';
+            document.getElementById('rankingMoneyBody').innerHTML = '<tr><td colspan="4" class="empty-state">Chưa có dữ liệu</td></tr>';
+            document.getElementById('rankingSkillBody').innerHTML = '<tr><td colspan="4" class="empty-state">Chưa có dữ liệu</td></tr>';
+            document.getElementById('rankingScoreBody').innerHTML = '<tr><td colspan="5" class="empty-state">Chưa có dữ liệu</td></tr>';
+            showNotification('Đã xóa tất cả', 'success');
+            autoSync();
+        };
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
         }
 
-        function importData() {
-            const fileInput = document.getElementById('importFile');
-            const file = fileInput.files[0];
-
-            if (!file) {
-                showMessage('Vui lòng chọn file JSON', 'error');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    
-                    // Upload to Firebase
-                    db.ref(dbPath + '/members').set(
-                        data.members.reduce((acc, m) => {
-                            acc[m.id] = m;
-                            return acc;
-                        }, {})
-                    );
-
-                    db.ref(dbPath + '/allMatches').set(
-                        data.allMatches.reduce((acc, m) => {
-                            acc[m.id] = m;
-                            return acc;
-                        }, {})
-                    );
-
-                    db.ref(dbPath + '/scheduleList').set(
-                        data.scheduleList.reduce((acc, s) => {
-                            acc[s.id] = s;
-                            return acc;
-                        }, {})
-                    );
-
-                    showMessage('✓ Đã khôi phục dữ liệu từ file', 'success');
-                    fileInput.value = '';
-                } catch (error) {
-                    showMessage(`❌ Lỗi khi đọc file: ${error.message}`, 'error');
-                }
-            };
-            reader.readAsText(file);
+        function saveData() {
+            localStorage.setItem('members', JSON.stringify(members));
+            localStorage.setItem('schedules', JSON.stringify(schedules));
+            localStorage.setItem('matches', JSON.stringify(matches));
         }
 
-        function clearAllData() {
-            if (confirm('⚠️ Bạn chắc chắn muốn xóa TẤT CẢ dữ liệu? (Không thể hoàn tác)')) {
-                if (confirm('⚠️ Xác nhận lần nữa: Xóa tất cả dữ liệu vĩnh viễn?')) {
-                    db.ref(dbPath).remove()
-                        .then(() => {
-                            members = [];
-                            allMatches = [];
-                            scheduleList = [];
-                            updateMembersList();
-                            updateMatchList();
-                            updateScheduleList();
-                            updateRankingMoney();
-                            updateRankingSkill();
-                            updateHistory();
-                            showMessage('✓ Đã xóa tất cả dữ liệu', 'success');
-                        })
-                        .catch(error => {
-                            showMessage(`❌ Lỗi: ${error.message}`, 'error');
-                        });
-                }
-            }
-        }
+        // Init
+        updateMembersList();
+        updatePairSelects();
+        updateScheduleList();
+        updateScheduleSelects();
+        updateMatchList();
+        document.getElementById('autoSyncBtn').textContent = '✅ Tự Động Đồng Bộ (BẬT)';
+        applyReadOnlyMode();
+        updateSettingsUI();
 
-        function showMessage(text, type) {
-            const msg = document.getElementById('message');
-            msg.textContent = text;
-            msg.className = `message ${type}`;
-            setTimeout(() => {
-                msg.className = 'message';
-            }, 3000);
-        }
+        window.addEventListener('load', () => {
+            setTimeout(() => manualLoadFirebase(), 500);
+        });
     </script>
 </body>
 </html>
