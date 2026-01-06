@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản Lý CLB Pickleball - Firebase</title>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"></script>
     <style>
         :root {
             --color-primary: #208791;
             --color-primary-hover: #186e7e;
-            --color-primary-active: #157170;
             --color-text: #134252;
             --color-text-secondary: #626c7c;
             --color-bg: #fcfcf9;
@@ -16,11 +18,16 @@
             --color-border: rgba(94, 82, 64, 0.2);
             --color-success: #22c75a;
             --color-error: #c0152f;
-            --color-warning: #a84b2f;
             --radius: 8px;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: var(--color-bg);
@@ -29,7 +36,11 @@
             line-height: 1.5;
         }
 
-        .container { max-width: 700px; margin: 0 auto; }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
         header {
             text-align: center;
             margin-bottom: 24px;
@@ -37,76 +48,30 @@
             border-bottom: 2px solid var(--color-primary);
         }
 
-        header h1 { font-size: 24px; color: var(--color-primary); margin-bottom: 4px; }
-        header p { color: var(--color-text-secondary); font-size: 14px; }
-
-        .sync-status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            background: rgba(34, 199, 90, 0.1);
-            border: 1px solid rgba(34, 199, 90, 0.3);
-            border-radius: var(--radius);
-            margin-bottom: 16px;
-            font-size: 12px;
-            color: #1a8a3a;
-        }
-
-        .sync-indicator {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #22c75a;
-        }
-
-        .sync-status.loading {
-            background: rgba(168, 75, 47, 0.1);
-            border-color: rgba(168, 75, 47, 0.3);
-            color: #a84b2f;
-        }
-
-        .sync-status.loading .sync-indicator {
-            background: #a84b2f;
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 24px;
-            border-bottom: 1px solid var(--color-border);
-            overflow-x: auto;
-        }
-
-        .tab-btn {
-            padding: 12px 16px;
-            background: none;
-            border: none;
-            border-bottom: 3px solid transparent;
-            color: var(--color-text-secondary);
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            transition: all 150ms;
-            white-space: nowrap;
-        }
-
-        .tab-btn.active {
+        header h1 {
+            font-size: 24px;
             color: var(--color-primary);
-            border-bottom-color: var(--color-primary);
+            margin-bottom: 4px;
         }
 
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        header p {
+            color: var(--color-text-secondary);
+            font-size: 14px;
+        }
 
-        .form-group { margin-bottom: 16px; }
+        .auth-section {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
         label {
             display: block;
             margin-bottom: 8px;
@@ -121,7 +86,6 @@
             border: 1px solid var(--color-border);
             border-radius: var(--radius);
             font-size: 14px;
-            font-family: inherit;
             color: var(--color-text);
             background: var(--color-surface);
         }
@@ -146,23 +110,77 @@
             margin-top: 8px;
         }
 
-        .btn:hover { background: var(--color-primary-hover); }
-        .btn.success { background: var(--color-success); }
-        .btn.success:hover { background: #1a8a3a; }
-        .btn.danger { background: var(--color-error); }
-        .btn.danger:hover { background: #a0121f; }
-        .btn.warning { background: var(--color-warning); }
-        .btn.warning:hover { background: #974325; }
-
-        .row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
+        .btn:hover {
+            background: var(--color-primary-hover);
         }
 
-        .row .form-group { margin-bottom: 0; }
+        .btn-secondary {
+            background: #666;
+        }
 
-        .member-list { margin-top: 16px; }
+        .btn-secondary:hover {
+            background: #555;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--color-border);
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 12px 16px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 150ms;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .message.success {
+            display: block;
+            background: rgba(34, 199, 90, 0.1);
+            color: #1a8a3a;
+            border: 1px solid rgba(34, 199, 90, 0.3);
+        }
+
+        .message.error {
+            display: block;
+            background: rgba(192, 21, 47, 0.1);
+            color: #a0121f;
+            border: 1px solid rgba(192, 21, 47, 0.3);
+        }
+
+        .member-list {
+            margin-top: 16px;
+        }
+
         .member-item {
             background: var(--color-surface);
             border: 1px solid var(--color-border);
@@ -174,16 +192,18 @@
             margin-bottom: 8px;
         }
 
-        .member-name { font-weight: 600; }
+        .member-name {
+            font-weight: 600;
+        }
+
         .member-badge {
             display: inline-block;
             padding: 4px 12px;
             background: rgba(32, 135, 145, 0.1);
             color: var(--color-primary);
             border-radius: 20px;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 500;
-            margin-left: 8px;
         }
 
         .member-badge.guest {
@@ -199,102 +219,67 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 12px;
-            transition: background 150ms;
+            margin: 0;
         }
 
-        .delete-btn:hover { background: #a0121f; }
+        .delete-btn:hover {
+            background: #a0121f;
+        }
+
+        .loading {
+            text-align: center;
+            color: var(--color-text-secondary);
+            padding: 20px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--color-success);
+            margin-right: 8px;
+        }
+
+        .status-indicator.offline {
+            background: #ff9800;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .row .form-group {
+            margin-bottom: 0;
+        }
 
         .match-item {
             background: var(--color-surface);
             border: 1px solid var(--color-border);
             border-radius: var(--radius);
             padding: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             margin-bottom: 8px;
-        }
-
-        .match-info { flex: 1; }
-        .match-players { font-weight: 600; margin-bottom: 4px; font-size: 14px; }
-        .match-score { font-size: 12px; color: var(--color-text-secondary); }
-
-        .payment-item {
-            background: var(--color-surface);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius);
-            padding: 16px;
-            margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .payment-name { font-weight: 600; font-size: 16px; }
-        .money {
+        .match-info {
+            flex: 1;
+        }
+
+        .match-players {
             font-weight: 600;
-            font-family: 'Courier New', monospace;
-        }
-
-        .money.positive { color: var(--color-success); }
-        .money.negative { color: var(--color-error); }
-
-        .total-payment {
-            background: rgba(32, 135, 145, 0.1);
-            border: 2px solid var(--color-primary);
-            border-radius: var(--radius);
-            padding: 16px;
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .total-payment-label { font-size: 14px; color: var(--color-text-secondary); margin-bottom: 8px; }
-        .total-payment-value { font-size: 32px; font-weight: 700; color: var(--color-primary); font-family: 'Courier New', monospace; }
-
-        .ranking-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 16px;
-            border-radius: var(--radius);
-            overflow: hidden;
-        }
-
-        .ranking-table thead {
-            background: var(--color-primary);
-            color: white;
-        }
-
-        .ranking-table th {
-            padding: 12px;
-            text-align: left;
-            font-weight: 600;
+            margin-bottom: 4px;
             font-size: 14px;
         }
 
-        .ranking-table td {
-            padding: 12px;
-            border-bottom: 1px solid var(--color-border);
-            font-size: 14px;
+        .match-score {
+            font-size: 12px;
+            color: var(--color-text-secondary);
         }
-
-        .ranking-table tbody tr:hover { background: rgba(32, 135, 145, 0.05); }
-
-        .rank-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 32px;
-            height: 32px;
-            background: var(--color-primary);
-            color: white;
-            border-radius: 50%;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .rank-1 { background: #ffd700; color: #333; }
-        .rank-2 { background: #c0c0c0; color: #333; }
-        .rank-3 { background: #cd7f32; color: white; }
 
         .empty-state {
             text-align: center;
@@ -302,940 +287,546 @@
             color: var(--color-text-secondary);
         }
 
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 12px 16px;
-            border-radius: var(--radius);
-            color: white;
-            animation: slideIn 0.3s ease;
-            z-index: 1000;
-            max-width: 300px;
-            font-size: 14px;
+        h2 {
+            font-size: 18px;
+            margin-top: 16px;
+            margin-bottom: 12px;
+            color: var(--color-text);
         }
 
-        .notification.success { background: var(--color-success); }
-        .notification.error { background: var(--color-error); }
-        .notification.info { background: var(--color-primary); }
-
-        @keyframes slideIn {
-            from { transform: translateX(400px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        h2 { font-size: 18px; margin-top: 16px; margin-bottom: 12px; color: var(--color-text); }
-        h3 { font-size: 14px; margin: 16px 0 8px 0; color: var(--color-text); }
-
-        .payment-date-header {
+        h3 {
             font-size: 16px;
-            font-weight: 600;
-            color: var(--color-primary);
-            margin: 16px 0 12px 0;
+            margin-top: 12px;
+            margin-bottom: 8px;
+            color: var(--color-text);
         }
 
-        .info-text { font-size: 12px; color: var(--color-text-secondary); margin-top: 8px; }
+        .add-form {
+            background: rgba(32, 135, 145, 0.05);
+            border: 1px solid var(--color-primary);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .add-form h3 {
+            margin-top: 0;
+        }
+
+        .section-header {
+            margin-top: 24px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--color-primary);
+        }
+
+        .info-box {
+            background: rgba(34, 199, 90, 0.1);
+            border: 1px solid rgba(34, 199, 90, 0.3);
+            padding: 12px;
+            border-radius: var(--radius);
+            font-size: 12px;
+            color: #1a8a3a;
+            margin-bottom: 16px;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(32, 135, 145, 0.3);
+            border-top: 2px solid var(--color-primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
             <h1>🏓 Quản Lý CLB Pickleball</h1>
-            <p>Tính tiền + Firebase Cloud Sync</p>
+            <p>Lưu trữ trên Firebase - <span class="status-indicator" id="statusIndicator"></span><span id="statusText">Kết nối...</span></p>
         </header>
 
-        <div class="sync-status" id="syncStatus">
-            <span class="sync-indicator"></span>
-            <span id="syncText">Sẵn sàng đồng bộ</span>
-        </div>
+        <div class="message" id="message"></div>
 
-        <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab(event, 'members')">👥 VĐV</button>
-            <button class="tab-btn" onclick="switchTab(event, 'schedule')">📅 Lịch</button>
-            <button class="tab-btn" onclick="switchTab(event, 'matches')">🎾 Trận</button>
-            <button class="tab-btn" onclick="switchTab(event, 'payment')">💳 Tiền</button>
-            <button class="tab-btn" onclick="switchTab(event, 'ranking-money')">💰 BXH Tiền</button>
-            <button class="tab-btn" onclick="switchTab(event, 'ranking-skill')">⭐ BXH Trình</button>
-            <button class="tab-btn" onclick="switchTab(event, 'ranking-score')">🏆 BXH Điểm</button>
-            <button class="tab-btn" onclick="switchTab(event, 'backup')">💾 Backup</button>
-            <button class="tab-btn" onclick="switchTab(event, 'settings')">🔐 Cài Đặt</button>
-        </div>
-
-        <!-- Tab VĐV -->
-        <div id="members" class="tab-content active">
-            <h2>➕ Thêm Thành Viên/Khách</h2>
-            <div class="row">
-                <div class="form-group">
-                    <label>Tên VĐV</label>
-                    <input type="text" id="memberName" placeholder="Nhập tên">
-                </div>
-                <div class="form-group">
-                    <label>Loại</label>
-                    <select id="memberType">
-                        <option value="club">Thành Viên CLB</option>
-                        <option value="guest">Khách</option>
-                    </select>
-                </div>
-            </div>
-            <button class="btn" onclick="addMember()">➕ Thêm VĐV</button>
-
-            <h2>👥 Danh Sách Thành Viên</h2>
-            <div class="member-list" id="membersList"></div>
-        </div>
-
-        <!-- Tab Lịch Sinh Hoạt -->
-        <div id="schedule" class="tab-content">
-            <h2>📅 Thêm Lịch Sinh Hoạt</h2>
-            <div class="row">
-                <div class="form-group">
-                    <label>Ngày Sinh Hoạt (dd/mm/yyyy)</label>
-                    <input type="text" id="scheduleDate" placeholder="01/12/2025">
-                </div>
-                <div class="form-group" style="grid-column: 1 / -1;">
-                    <label>Ghi Chú (tùy chọn)</label>
-                    <input type="text" id="scheduleNote" placeholder="Ví dụ: Vòng 1, Bán kết...">
-                </div>
-            </div>
-            <button class="btn" onclick="addSchedule()">📅 Thêm Ngày</button>
-
-            <h2>Danh Sách Lịch Sinh Hoạt</h2>
-            <div class="member-list" id="scheduleList"></div>
-        </div>
-
-        <!-- Tab Trận Đấu -->
-        <div id="matches" class="tab-content">
-            <h2>🎾 Ghi Lại Trận Đấu</h2>
+        <!-- Auth Section -->
+        <div class="auth-section" id="authSection">
+            <h2>Đăng Nhập Firebase</h2>
             <div class="form-group">
-                <label>Chọn Ngày Sinh Hoạt</label>
-                <select id="eventDate" onchange="updateMatchForm()">
-                    <option value="">-- Chọn ngày --</option>
-                </select>
-            </div>
-
-            <h3>Cặp 1</h3>
-            <div class="row">
-                <div class="form-group">
-                    <label>VĐV 1</label>
-                    <select id="pair1a">
-                        <option value="">-- Chọn --</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>VĐV 2</label>
-                    <select id="pair1b">
-                        <option value="">-- Chọn --</option>
-                    </select>
-                </div>
+                <label for="authEmail">Email</label>
+                <input type="email" id="authEmail" placeholder="your@email.com">
             </div>
             <div class="form-group">
-                <label>Tỷ Số</label>
-                <input type="number" id="score1" placeholder="15" min="0">
+                <label for="authPassword">Mật Khẩu</label>
+                <input type="password" id="authPassword" placeholder="Mật khẩu">
+            </div>
+            <button class="btn" onclick="loginOrSignup()">Đăng Nhập / Đăng Ký</button>
+            <button class="btn btn-secondary" onclick="loginAnonymous()">Khách (Tạm Thời)</button>
+        </div>
+
+        <!-- Main App Section (Hidden until authenticated) -->
+        <div id="appSection" style="display: none;">
+            <button class="btn btn-secondary" style="width: auto; margin-bottom: 16px;" onclick="logout()">Đăng Xuất</button>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab(event, 'members')">👥 Thành Viên</button>
+                <button class="tab-btn" onclick="switchTab(event, 'matches')">🎾 Trận Đấu</button>
+                <button class="tab-btn" onclick="switchTab(event, 'ranking')">💰 Bảng Xếp Hạng</button>
             </div>
 
-            <h3>Cặp 2</h3>
-            <div class="row">
-                <div class="form-group">
-                    <label>VĐV 1</label>
-                    <select id="pair2a">
-                        <option value="">-- Chọn --</option>
-                    </select>
+            <!-- Tab Thành Viên -->
+            <div id="members" class="tab-content active">
+                <div class="add-form">
+                    <h3>➕ Thêm Thành Viên</h3>
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="memberName">Tên VĐV</label>
+                            <input type="text" id="memberName" placeholder="Nhập tên">
+                        </div>
+                        <div class="form-group">
+                            <label for="memberType">Loại</label>
+                            <select id="memberType">
+                                <option value="club">Thành Viên CLB</option>
+                                <option value="guest">Khách</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn" onclick="addMember()">➕ Thêm VĐV</button>
                 </div>
-                <div class="form-group">
-                    <label>VĐV 2</label>
-                    <select id="pair2b">
-                        <option value="">-- Chọn --</option>
-                    </select>
+
+                <h2 class="section-header">👥 Danh Sách Thành Viên CLB</h2>
+                <div class="member-list" id="clubMembersList"><div class="empty-state"><p>Chưa có thành viên</p></div></div>
+
+                <h2 class="section-header">🤝 Danh Sách Khách</h2>
+                <div class="member-list" id="guestMembersList"><div class="empty-state"><p>Chưa có khách</p></div></div>
+            </div>
+
+            <!-- Tab Trận Đấu -->
+            <div id="matches" class="tab-content">
+                <div class="add-form">
+                    <h3>➕ Thêm Trận Đấu</h3>
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="pair1_player1">Cặp 1 - VĐV 1</label>
+                            <select id="pair1_player1"></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="pair1_player2">Cặp 1 - VĐV 2</label>
+                            <select id="pair1_player2"></select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="pair2_player1">Cặp 2 - VĐV 1</label>
+                            <select id="pair2_player1"></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="pair2_player2">Cặp 2 - VĐV 2</label>
+                            <select id="pair2_player2"></select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="score1">Điểm Cặp 1</label>
+                            <input type="number" id="score1" placeholder="15" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="score2">Điểm Cặp 2</label>
+                            <input type="number" id="score2" placeholder="10" min="0">
+                        </div>
+                    </div>
+                    <button class="btn" onclick="addMatch()">➕ Thêm Trận Đấu</button>
                 </div>
-            </div>
-            <div class="form-group">
-                <label>Tỷ Số</label>
-                <input type="number" id="score2" placeholder="10" min="0">
-            </div>
 
-            <button class="btn" onclick="addMatch()">➕ Thêm Trận Đấu</button>
-
-            <h2>Danh Sách Trận Đấu</h2>
-            <div class="member-list" id="matchList"></div>
-        </div>
-
-        <!-- Tab Tính Tiền -->
-        <div id="payment" class="tab-content">
-            <h2>💳 Bảng Tính Tiền</h2>
-            <div class="form-group">
-                <label>Chọn Ngày Sinh Hoạt</label>
-                <select id="paymentDate" onchange="updatePaymentList()">
-                    <option value="">-- Chọn ngày --</option>
-                </select>
-            </div>
-            <div id="paymentList"></div>
-        </div>
-
-        <!-- Tab BXH Tiền -->
-        <div id="ranking-money" class="tab-content">
-            <h2>💰 Bảng Xếp Hạng Tiền (Năm Dương Lịch)</h2>
-            <table class="ranking-table">
-                <thead>
-                    <tr>
-                        <th>Hạng</th>
-                        <th>Tên VĐV</th>
-                        <th>Trận</th>
-                        <th>Tiền (k)</th>
-                    </tr>
-                </thead>
-                <tbody id="rankingMoneyBody">
-                    <tr>
-                        <td colspan="4" class="empty-state" style="padding: 40px 20px;">Chưa có dữ liệu</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Tab BXH Trình Độ -->
-        <div id="ranking-skill" class="tab-content">
-            <h2>⭐ Bảng Xếp Hạng Trình Độ (≥5 Trận)</h2>
-            <table class="ranking-table">
-                <thead>
-                    <tr>
-                        <th>Hạng</th>
-                        <th>Tên VĐV</th>
-                        <th>Trận</th>
-                        <th>Thắng %</th>
-                    </tr>
-                </thead>
-                <tbody id="rankingSkillBody">
-                    <tr>
-                        <td colspan="4" class="empty-state" style="padding: 40px 20px;">Chưa có dữ liệu</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Tab BXH Điểm Số -->
-        <div id="ranking-score" class="tab-content">
-            <h2>🏆 Bảng Xếp Hạng Điểm Số</h2>
-            <table class="ranking-table">
-                <thead>
-                    <tr>
-                        <th>Hạng</th>
-                        <th>Tên VĐV</th>
-                        <th>W/L</th>
-                        <th>Điểm</th>
-                        <th>Hiệu Số</th>
-                    </tr>
-                </thead>
-                <tbody id="rankingScoreBody">
-                    <tr>
-                        <td colspan="5" class="empty-state" style="padding: 40px 20px;">Chưa có dữ liệu</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Tab Cài Đặt -->
-        <div id="settings" class="tab-content">
-            <h2>🔐 Cài Đặt Bảo Mật</h2>
-            <div class="form-group">
-                <label>
-                    <strong>⚠️ Chế Độ Xem (Chỉ Đọc) - Luôn Bật</strong>
-                </label>
-                <p class="info-text" style="margin-top: 8px;">Chế độ xem luôn bật. Nhập mật khẩu để tạm tắt trong 5 phút.</p>
-                <button class="btn warning" onclick="toggleReadOnlyWithPassword()">🔓 Tắt Chế Độ Xem (5 phút)</button>
+                <h2 class="section-header">🎾 Danh Sách Trận Đấu</h2>
+                <div id="matchList" class="member-list"><div class="empty-state"><p>Chưa có trận đấu</p></div></div>
             </div>
 
-            <div class="info-text" style="margin-top: 20px; background: rgba(192, 21, 47, 0.1); padding: 12px; border-radius: 8px;">
-                ⚠️ <strong>Chế Độ Xem:</strong> Khi bật, chỉ khóa nút Thêm / Ghi / Xóa<br>
-                ⚠️ <strong>Mật Khẩu:</strong> Được lưu và đồng bộ trên Cloud Firebase
-            </div>
-
-            <h3 style="margin-top: 30px;">Trạng Thái Hiện Tại</h3>
-            <div class="payment-item">
-                <div class="payment-name">Chế Độ</div>
-                <div><span id="modeStatus" class="money negative">🔒 Chỉ Xem (Bật)</span></div>
-            </div>
-            <div class="payment-item">
-                <div class="payment-name">Đồng Bộ Cloud</div>
-                <div><span id="syncStatus2" class="money positive">✓ Tự Động</span></div>
-            </div>
-        </div>
-
-        <!-- Tab Backup -->
-        <div id="backup" class="tab-content">
-            <h2>💾 Sao Lưu & Đồng Bộ</h2>
-            <button class="btn success" onclick="toggleAutoSync()" id="autoSyncBtn">🔄 Tự Động Đồng Bộ Firebase</button>
-            <button class="btn" onclick="manualSaveFirebase()">💾 Lưu Lên Firebase Ngay</button>
-            <button class="btn" onclick="manualLoadFirebase()">📥 Tải Từ Firebase</button>
-            <button class="btn" onclick="exportData()">📥 Tải Về (JSON)</button>
-            <button class="btn danger" onclick="clearAllData()">🗑️ Xóa Tất Cả</button>
-
-            <div class="info-text" style="margin-top: 20px; background: rgba(34, 199, 90, 0.1); padding: 12px; border-radius: 8px;">
-                ✓ Dữ liệu được lưu trên máy tính + Firebase Cloud<br>
-                ✓ 100% offline - không cần internet<br>
-                ✓ Tự động đồng bộ khi có thay đổi
+            <!-- Tab Bảng Xếp Hạng -->
+            <div id="ranking" class="tab-content">
+                <h2>💰 Bảng Xếp Hạng Tiền</h2>
+                <div id="rankingList" class="member-list"><div class="empty-state"><p>Chưa có dữ liệu</p></div></div>
             </div>
         </div>
     </div>
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
-
+    <script>
+        // Firebase Configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyBG-6841iqN0DM-n7Bz7rbMSlAF5rqrQtU",
-            authDomain: "viettri-c414e.firebaseapp.com",
-            databaseURL: "https://viettri-c414e-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "viettri-c414e",
-            storageBucket: "viettri-c414e.firebasestorage.app",
+            apiKey: "AIzaSyBG-6841iqN0DM-n7Bz7rbMSlAF5rqQtU",
+            authDomain: "vietri-c414e.firebaseapp.com",
+            databaseURL: "https://vietri-c414e-default-rtdb.asia-southeast1.firebaseio.com",
+            projectId: "vietri-c414e",
+            storageBucket: "vietri-c414e.firebasestorage.app",
             messagingSenderId: "149479382894",
             appId: "1:149479382894:web:9408a8cc797ef22fe42b7f"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const auth = firebase.auth();
 
-        let members = JSON.parse(localStorage.getItem('members')) || [];
-        let schedules = JSON.parse(localStorage.getItem('schedules')) || [];
-        let matches = JSON.parse(localStorage.getItem('matches')) || [];
-        let autoSyncEnabled = true;
-        let readOnlyMode = true;
-        let adminPassword = localStorage.getItem('adminPassword') || 'Tayho';
+        let currentUser = null;
+        let members = [];
+        let matches = [];
 
-        function switchTab(event, tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
+        // Auth State
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('authSection').style.display = 'none';
+                document.getElementById('appSection').style.display = 'block';
+                loadData();
+                updateStatusIndicator(true);
+            } else {
+                currentUser = null;
+                document.getElementById('authSection').style.display = 'block';
+                document.getElementById('appSection').style.display = 'none';
+                updateStatusIndicator(false);
+            }
+        });
 
-            if (tabName === 'ranking-money') updateRankingMoney();
-            else if (tabName === 'ranking-skill') updateRankingSkill();
-            else if (tabName === 'ranking-score') updateRankingScore();
-            else if (tabName === 'payment') updatePaymentDropdown();
-            else if (tabName === 'settings') updateSettingsUI();
+        // Online/Offline Status
+        db.ref('.info/connected').on('value', snap => {
+            if (snap.val() === true) {
+                updateStatusIndicator(true);
+            } else {
+                updateStatusIndicator(false);
+            }
+        });
+
+        function updateStatusIndicator(isOnline) {
+            const indicator = document.getElementById('statusIndicator');
+            const text = document.getElementById('statusText');
+            if (isOnline) {
+                indicator.classList.remove('offline');
+                text.textContent = 'Kết nối';
+            } else {
+                indicator.classList.add('offline');
+                text.textContent = 'Ngoại tuyến';
+            }
         }
 
-        function updateSettingsUI() {
-            document.getElementById('modeStatus').textContent = readOnlyMode ? '🔒 Chỉ Xem (Bật)' : '✏️ Chỉnh Sửa (Tạm thời)';
-            document.getElementById('modeStatus').className = readOnlyMode ? 'money negative' : 'money positive';
-            document.getElementById('syncStatus2').textContent = '✓ Tự Động';
-            document.getElementById('syncStatus2').className = 'money positive';
-        }
+        function loginOrSignup() {
+            const email = document.getElementById('authEmail').value.trim();
+            const password = document.getElementById('authPassword').value;
 
-        function toggleReadOnlyWithPassword() {
-            const pwd = prompt('Nhập mật khẩu admin để tắt chế độ xem (5 phút):');
-            if (!pwd) return;
-            if (pwd !== adminPassword) {
-                showNotification('Mật khẩu sai!', 'error');
+            if (!email || !password) {
+                showMessage('Vui lòng nhập email và mật khẩu', 'error');
                 return;
             }
-            readOnlyMode = false;
-            applyReadOnlyMode();
-            updateSettingsUI();
-            showNotification('✓ Chế độ chỉnh sửa đã bật trong 5 phút', 'success');
-            setTimeout(() => {
-                readOnlyMode = true;
-                applyReadOnlyMode();
-                updateSettingsUI();
-                showNotification('⏱️ Đã quay lại chế độ chỉ xem', 'info');
-                autoSync();
-            }, 300000);
+
+            auth.signInWithEmailAndPassword(email, password)
+                .catch(error => {
+                    if (error.code === 'auth/user-not-found') {
+                        return auth.createUserWithEmailAndPassword(email, password);
+                    }
+                    throw error;
+                })
+                .then(() => {
+                    showMessage('✓ Đăng nhập thành công', 'success');
+                })
+                .catch(error => {
+                    showMessage(`❌ Lỗi: ${error.message}`, 'error');
+                });
         }
 
-        function applyReadOnlyMode() {
-            // Chế độ xem: chỉ khóa nút hành động, KHÔNG khóa select / input ngày
-            const disableButtonsText = ['Thêm', 'Ghi', 'Xóa'];
-            const buttons = document.querySelectorAll('.btn');
+        function loginAnonymous() {
+            auth.signInAnonymously()
+                .then(() => {
+                    showMessage('✓ Đăng nhập khách thành công', 'success');
+                })
+                .catch(error => {
+                    showMessage(`❌ Lỗi: ${error.message}`, 'error');
+                });
+        }
 
-            buttons.forEach(btn => {
-                const text = btn.textContent || '';
-                const isAction =
-                    disableButtonsText.some(t => text.includes(t)) &&
-                    !text.includes('Tải') && !text.includes('Firebase');
-                if (isAction) {
-                    btn.disabled = readOnlyMode;
-                    btn.style.opacity = readOnlyMode ? '0.5' : '1';
-                    btn.style.cursor = readOnlyMode ? 'not-allowed' : 'pointer';
-                }
+        function logout() {
+            auth.signOut()
+                .then(() => {
+                    members = [];
+                    matches = [];
+                    document.getElementById('authEmail').value = '';
+                    document.getElementById('authPassword').value = '';
+                    showMessage('✓ Đã đăng xuất', 'success');
+                })
+                .catch(error => {
+                    showMessage(`❌ Lỗi: ${error.message}`, 'error');
+                });
+        }
+
+        function loadData() {
+            if (!currentUser) return;
+
+            const userRef = db.ref(`users/${currentUser.uid}`);
+
+            // Load members
+            userRef.child('members').on('value', snap => {
+                members = [];
+                snap.forEach(child => {
+                    members.push(child.val());
+                });
+                updateMembersList();
+                loadPlayerSelects();
             });
 
-            const deleteButtons = document.querySelectorAll('.delete-btn');
-            deleteButtons.forEach(btn => {
-                btn.disabled = readOnlyMode;
-                btn.style.opacity = readOnlyMode ? '0.5' : '1';
-                btn.style.cursor = readOnlyMode ? 'not-allowed' : 'pointer';
+            // Load matches
+            userRef.child('matches').on('value', snap => {
+                matches = [];
+                snap.forEach(child => {
+                    matches.push(child.val());
+                });
+                updateMatchList();
+                updateRanking();
             });
         }
 
         function addMember() {
             const name = document.getElementById('memberName').value.trim();
             const type = document.getElementById('memberType').value;
+
             if (!name) {
-                showNotification('Vui lòng nhập tên VĐV', 'error');
+                showMessage('Vui lòng nhập tên VĐV', 'error');
                 return;
             }
+
             if (members.some(m => m.name.toLowerCase() === name.toLowerCase())) {
-                showNotification('VĐV này đã có trong danh sách', 'error');
+                showMessage('VĐV này đã có trong danh sách', 'error');
                 return;
             }
-            members.push({ id: Date.now(), name, type });
-            saveData();
-            showNotification(`✓ Đã thêm VĐV: ${name}`, 'success');
-            document.getElementById('memberName').value = '';
-            updateMembersList();
-            updatePairSelects();
-            autoSync();
+
+            const memberId = Date.now().toString();
+            const memberData = { id: memberId, name, type };
+
+            db.ref(`users/${currentUser.uid}/members/${memberId}`).set(memberData)
+                .then(() => {
+                    showMessage(`✓ Đã thêm VĐV: ${name}`, 'success');
+                    document.getElementById('memberName').value = '';
+                    document.getElementById('memberType').value = 'club';
+                })
+                .catch(error => {
+                    showMessage(`❌ Lỗi: ${error.message}`, 'error');
+                });
         }
 
         function deleteMember(id) {
             if (confirm('Xóa VĐV này?')) {
-                members = members.filter(m => m.id !== id);
-                saveData();
-                updateMembersList();
-                updatePairSelects();
-                showNotification('Đã xóa VĐV', 'success');
-                autoSync();
+                db.ref(`users/${currentUser.uid}/members/${id}`).remove()
+                    .then(() => {
+                        showMessage('✓ Đã xóa VĐV', 'success');
+                    })
+                    .catch(error => {
+                        showMessage(`❌ Lỗi: ${error.message}`, 'error');
+                    });
             }
         }
 
         function updateMembersList() {
-            const html = members.map(m => `
-                <div class="member-item">
-                    <div><div class="member-name">${m.name}<span class="member-badge ${m.type === 'guest' ? 'guest' : ''}">${m.type === 'club' ? 'Thành Viên' : 'Khách'}</span></div></div>
-                    <button class="delete-btn" onclick="deleteMember(${m.id})">Xóa</button>
-                </div>
-            `).join('') || '<div class="empty-state"><p>Chưa có thành viên</p></div>';
-            document.getElementById('membersList').innerHTML = html;
-        }
+            const clubList = members.filter(m => m.type === 'club');
+            const guestList = members.filter(m => m.type === 'guest');
 
-        function addSchedule() {
-            const dateInput = document.getElementById('scheduleDate').value.trim();
-            const note = document.getElementById('scheduleNote').value.trim();
-            if (!dateInput) {
-                showNotification('Vui lòng nhập ngày', 'error');
-                return;
-            }
-            const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
-            const match = dateInput.match(dateRegex);
-            if (!match) {
-                showNotification('Định dạng ngày không hợp lệ (dd/mm/yyyy)', 'error');
-                return;
-            }
-            const [_, day, month, year] = match;
-            const date = `${year}-${month}-${day}`;
-            if (schedules.some(s => s.date === date)) {
-                showNotification('Ngày này đã có trong lịch', 'error');
-                return;
-            }
-            schedules.push({ id: Date.now(), date, note, displayDate: dateInput });
-            schedules.sort((a, b) => new Date(a.date) - new Date(b.date));
-            saveData();
-            showNotification('✓ Đã thêm ngày sinh hoạt', 'success');
-            document.getElementById('scheduleDate').value = '';
-            document.getElementById('scheduleNote').value = '';
-            updateScheduleList();
-            updateScheduleSelects();
-            autoSync();
-        }
-
-        function deleteSchedule(id) {
-            if (confirm('Xóa ngày sinh hoạt này?')) {
-                schedules = schedules.filter(s => s.id !== id);
-                saveData();
-                updateScheduleList();
-                updateScheduleSelects();
-                showNotification('Đã xóa ngày sinh hoạt', 'success');
-                autoSync();
-            }
-        }
-
-        function updateScheduleList() {
-            const html = schedules.map(s => {
-                const dateStr = s.displayDate || new Date(s.date).toLocaleDateString('vi-VN');
-                const matchCount = matches.filter(m => m.date === s.date).length;
-                return `
-                    <div class="match-item">
-                        <div class="match-info">
-                            <div class="match-players"><strong>${dateStr}</strong></div>
-                            <div class="match-score">${s.note || 'Không có ghi chú'} • ${matchCount} trận</div>
+            const clubHtml = clubList.length > 0
+                ? clubList.map(m => `
+                    <div class="member-item">
+                        <div>
+                            <div class="member-name">${m.name}</div>
+                            <span class="member-badge">Thành Viên CLB</span>
                         </div>
-                        <button class="delete-btn" onclick="deleteSchedule(${s.id})">Xóa</button>
+                        <button class="delete-btn" onclick="deleteMember('${m.id}')">Xóa</button>
                     </div>
-                `;
-            }).join('') || '<div class="empty-state"><p>Chưa có lịch sinh hoạt</p></div>';
-            document.getElementById('scheduleList').innerHTML = html;
+                `).join('')
+                : '<div class="empty-state"><p>Chưa có thành viên CLB</p></div>';
+
+            const guestHtml = guestList.length > 0
+                ? guestList.map(m => `
+                    <div class="member-item">
+                        <div>
+                            <div class="member-name">${m.name}</div>
+                            <span class="member-badge guest">Khách</span>
+                        </div>
+                        <button class="delete-btn" onclick="deleteMember('${m.id}')">Xóa</button>
+                    </div>
+                `).join('')
+                : '<div class="empty-state"><p>Chưa có khách</p></div>';
+
+            document.getElementById('clubMembersList').innerHTML = clubHtml;
+            document.getElementById('guestMembersList').innerHTML = guestHtml;
         }
 
-        function updateScheduleSelects() {
-            const select = document.getElementById('eventDate');
-            const value = select.value;
-            select.innerHTML = '<option value="">-- Chọn ngày --</option>' +
-                schedules.map(s => `<option value="${s.date}">${s.displayDate || new Date(s.date).toLocaleDateString('vi-VN')}${s.note ? ` (${s.note})` : ''}</option>`).join('');
-            if (value) select.value = value;
-            updatePaymentDropdown();
-        }
-
-        function updatePaymentDropdown() {
-            const select = document.getElementById('paymentDate');
-            const value = select.value;
-            select.innerHTML = '<option value="">-- Chọn ngày --</option>' +
-                schedules.map(s => `<option value="${s.date}">${s.displayDate || new Date(s.date).toLocaleDateString('vi-VN')}${s.note ? ` (${s.note})` : ''}</option>`).join('');
-            if (value) select.value = value;
-        }
-
-        function updatePairSelects() {
+        function loadPlayerSelects() {
             const playerNames = members.map(m => m.name);
-            const selectIds = ['pair1a', 'pair1b', 'pair2a', 'pair2b'];
-            selectIds.forEach(id => {
-                const elem = document.getElementById(id);
-                const value = elem.value;
-                elem.innerHTML = '<option value="">-- Chọn --</option>' + playerNames.map(p => `<option value="${p}">${p}</option>`).join('');
-                if (value) elem.value = value;
-            });
-        }
+            const selects = ['pair1_player1', 'pair1_player2', 'pair2_player1', 'pair2_player2'];
 
-        function updateMatchForm() {
-            if (!document.getElementById('eventDate').value) return;
+            selects.forEach(id => {
+                const elem = document.getElementById(id);
+                const currentValue = elem.value;
+                elem.innerHTML = '<option value="">-- Chọn --</option>';
+                playerNames.forEach(name => {
+                    elem.innerHTML += `<option value="${name}">${name}</option>`;
+                });
+                if (currentValue) elem.value = currentValue;
+            });
         }
 
         function addMatch() {
-            const date = document.getElementById('eventDate').value;
-            const p1a = document.getElementById('pair1a').value;
-            const p1b = document.getElementById('pair1b').value;
-            const p2a = document.getElementById('pair2a').value;
-            const p2b = document.getElementById('pair2b').value;
+            const p1_1 = document.getElementById('pair1_player1').value;
+            const p1_2 = document.getElementById('pair1_player2').value;
+            const p2_1 = document.getElementById('pair2_player1').value;
+            const p2_2 = document.getElementById('pair2_player2').value;
             const score1 = parseInt(document.getElementById('score1').value) || 0;
             const score2 = parseInt(document.getElementById('score2').value) || 0;
 
-            if (!date) {
-                showNotification('Vui lòng chọn ngày sinh hoạt', 'error');
+            if (!p1_1 || !p1_2 || !p2_1 || !p2_2) {
+                showMessage('Vui lòng chọn đủ 4 VĐV', 'error');
                 return;
             }
-            if (!p1a || !p1b || !p2a || !p2b) {
-                showNotification('Vui lòng chọn đủ 4 VĐV', 'error');
-                return;
-            }
-            const allPlayers = [p1a, p1b, p2a, p2b];
+
+            const allPlayers = [p1_1, p1_2, p2_1, p2_2];
             if (new Set(allPlayers).size !== 4) {
-                showNotification('Các VĐV không được trùng nhau', 'error');
+                showMessage('Các VĐV không được trùng nhau', 'error');
                 return;
             }
 
-            const pair1 = `${p1a} - ${p1b}`;
-            const pair2 = `${p2a} - ${p2b}`;
+            if (score1 === 0 && score2 === 0) {
+                showMessage('Vui lòng nhập điểm số', 'error');
+                return;
+            }
 
-            matches.push({
-                id: Date.now(),
-                date,
-                pair1,
-                pair2,
+            const matchId = Date.now().toString();
+            const matchData = {
+                id: matchId,
+                pair1: [p1_1, p1_2],
+                pair2: [p2_1, p2_2],
                 score1,
                 score2,
+                date: new Date().toISOString(),
                 result1: score1 > score2 ? 'win' : 'lose',
                 result2: score2 > score1 ? 'win' : 'lose'
-            });
+            };
 
-            saveData();
-            showNotification(`✓ Thêm trận: ${pair1} ${score1} - ${score2} ${pair2}`, 'success');
-            document.getElementById('score1').value = '';
-            document.getElementById('score2').value = '';
-            document.getElementById('pair1a').value = '';
-            document.getElementById('pair1b').value = '';
-            document.getElementById('pair2a').value = '';
-            document.getElementById('pair2b').value = '';
-            updateMatchList();
-            updatePaymentList();
-            autoSync();
-        }
-
-        function updateMatchList() {
-            const dateFilter = document.getElementById('eventDate').value;
-            const filtered = dateFilter ? matches.filter(m => m.date === dateFilter) : matches;
-            const html = filtered.slice().reverse().map(m => `
-                <div class="match-item">
-                    <div class="match-info">
-                        <div class="match-players">${m.pair1} <strong>${m.score1}</strong> - <strong>${m.score2}</strong> ${m.pair2}</div>
-                        <div class="match-score">${m.date}</div>
-                    </div>
-                    <button class="delete-btn" onclick="deleteMatch(${m.id})">Xóa</button>
-                </div>
-            `).join('') || '<div class="empty-state"><p>Chưa có trận đấu</p></div>';
-            document.getElementById('matchList').innerHTML = html;
+            db.ref(`users/${currentUser.uid}/matches/${matchId}`).set(matchData)
+                .then(() => {
+                    showMessage(`✓ Thêm trận: (${p1_1}+${p1_2}) ${score1}-${score2} (${p2_1}+${p2_2})`, 'success');
+                    document.getElementById('score1').value = '';
+                    document.getElementById('score2').value = '';
+                    document.getElementById('pair1_player1').value = '';
+                    document.getElementById('pair1_player2').value = '';
+                    document.getElementById('pair2_player1').value = '';
+                    document.getElementById('pair2_player2').value = '';
+                })
+                .catch(error => {
+                    showMessage(`❌ Lỗi: ${error.message}`, 'error');
+                });
         }
 
         function deleteMatch(id) {
             if (confirm('Xóa trận đấu này?')) {
-                matches = matches.filter(m => m.id !== id);
-                saveData();
-                updateMatchList();
-                updatePaymentList();
-                showNotification('Đã xóa trận đấu', 'success');
-                autoSync();
+                db.ref(`users/${currentUser.uid}/matches/${id}`).remove()
+                    .then(() => {
+                        showMessage('✓ Đã xóa trận đấu', 'success');
+                    })
+                    .catch(error => {
+                        showMessage(`❌ Lỗi: ${error.message}`, 'error');
+                    });
             }
         }
 
-        function updatePaymentList() {
-            const date = document.getElementById('paymentDate').value;
-            if (!date) {
-                document.getElementById('paymentList').innerHTML = '<div class="empty-state"><p>Vui lòng chọn ngày</p></div>';
-                return;
-            }
+        function updateMatchList() {
+            const matchHtml = matches.length > 0
+                ? [...matches].reverse().map(m => {
+                    const result1 = m.result1 === 'win' ? '✓ Thắng' : '✗ Thua';
+                    const result2 = m.result2 === 'win' ? '✓ Thắng' : '✗ Thua';
+                    const date = new Date(m.date).toLocaleDateString('vi-VN');
+                    return `
+                        <div class="match-item">
+                            <div class="match-info">
+                                <div class="match-players">(${m.pair1[0]}+${m.pair1[1]}) <strong>${m.score1}</strong> vs <strong>${m.score2}</strong> (${m.pair2[0]}+${m.pair2[1]})</div>
+                                <div class="match-score">${date} • ${result1} / ${result2}</div>
+                            </div>
+                            <button class="delete-btn" onclick="deleteMatch('${m.id}')">Xóa</button>
+                        </div>
+                    `;
+                }).join('')
+                : '<div class="empty-state"><p>Chưa có trận đấu</p></div>';
 
-            const dayMatches = matches.filter(m => m.date === date);
-            const playerMoney = {};
-
-            dayMatches.forEach(m => {
-                const [p1a, p1b] = m.pair1.split(' - ').map(x => x.trim());
-                const [p2a, p2b] = m.pair2.split(' - ').map(x => x.trim());
-
-                if (m.result1 === 'win') {
-                    playerMoney[p1a] = (playerMoney[p1a] || 0) + 50;
-                    playerMoney[p1b] = (playerMoney[p1b] || 0) + 50;
-                    playerMoney[p2a] = (playerMoney[p2a] || 0) - 50;
-                    playerMoney[p2b] = (playerMoney[p2b] || 0) - 50;
-                } else {
-                    playerMoney[p2a] = (playerMoney[p2a] || 0) + 50;
-                    playerMoney[p2b] = (playerMoney[p2b] || 0) + 50;
-                    playerMoney[p1a] = (playerMoney[p1a] || 0) - 50;
-                    playerMoney[p1b] = (playerMoney[p1b] || 0) - 50;
-                }
-            });
-
-            if (Object.keys(playerMoney).length === 0) {
-                document.getElementById('paymentList').innerHTML = '<div class="empty-state"><p>Chưa có trận đấu ngày này</p></div>';
-                return;
-            }
-
-            const sorted = Object.entries(playerMoney).sort((a, b) => a[1] - b[1]);
-            const total = Object.values(playerMoney).reduce((a, b) => a + b, 0);
-
-            let html = `<div class="payment-date-header">📅 ${new Date(date).toLocaleDateString('vi-VN')}</div>`;
-            html += sorted.map(([name, amount]) => `
-                <div class="payment-item">
-                    <div class="payment-name">${name}</div>
-                    <div><span class="money ${amount < 0 ? 'negative' : 'positive'}">${amount < 0 ? '-' : '+'}${Math.abs(amount)}k</span></div>
-                </div>
-            `).join('');
-            html += `<div class="total-payment"><div class="total-payment-label">Tổng Cộng</div><div class="total-payment-value">${total >= 0 ? '+' : ''}${total}k</div></div>`;
-
-            document.getElementById('paymentList').innerHTML = html;
+            document.getElementById('matchList').innerHTML = matchHtml;
         }
 
-        function updateRankingMoney() {
-            const currentYear = new Date().getFullYear();
-            const playerMoney = {};
+        function updateRanking() {
+            const stats = {};
 
             matches.forEach(m => {
-                if (new Date(m.date).getFullYear() !== currentYear) return;
-                const [p1a, p1b] = m.pair1.split(' - ').map(x => x.trim());
-                const [p2a, p2b] = m.pair2.split(' - ').map(x => x.trim());
+                [m.pair1[0], m.pair1[1]].forEach(p => {
+                    if (!stats[p]) stats[p] = { wins: 0, losses: 0, money: 0 };
+                });
+                [m.pair2[0], m.pair2[1]].forEach(p => {
+                    if (!stats[p]) stats[p] = { wins: 0, losses: 0, money: 0 };
+                });
 
                 if (m.result1 === 'win') {
-                    playerMoney[p1a] = (playerMoney[p1a] || { money: 0, matches: 0 });
-                    playerMoney[p1b] = (playerMoney[p1b] || { money: 0, matches: 0 });
-                    playerMoney[p1a].money += 50;
-                    playerMoney[p1b].money += 50;
-                    playerMoney[p1a].matches++;
-                    playerMoney[p1b].matches++;
-                    playerMoney[p2a] = (playerMoney[p2a] || { money: 0, matches: 0 });
-                    playerMoney[p2b] = (playerMoney[p2b] || { money: 0, matches: 0 });
-                    playerMoney[p2a].money -= 50;
-                    playerMoney[p2b].money -= 50;
-                    playerMoney[p2a].matches++;
-                    playerMoney[p2b].matches++;
+                    [m.pair1[0], m.pair1[1]].forEach(p => {
+                        stats[p].wins++;
+                        stats[p].money += 50000;
+                    });
+                    [m.pair2[0], m.pair2[1]].forEach(p => {
+                        stats[p].losses++;
+                        stats[p].money -= 50000;
+                    });
                 } else {
-                    playerMoney[p2a] = (playerMoney[p2a] || { money: 0, matches: 0 });
-                    playerMoney[p2b] = (playerMoney[p2b] || { money: 0, matches: 0 });
-                    playerMoney[p2a].money += 50;
-                    playerMoney[p2b].money += 50;
-                    playerMoney[p2a].matches++;
-                    playerMoney[p2b].matches++;
-                    playerMoney[p1a] = (playerMoney[p1a] || { money: 0, matches: 0 });
-                    playerMoney[p1b] = (playerMoney[p1b] || { money: 0, matches: 0 });
-                    playerMoney[p1a].money -= 50;
-                    playerMoney[p1b].money -= 50;
-                    playerMoney[p1a].matches++;
-                    playerMoney[p1b].matches++;
+                    [m.pair2[0], m.pair2[1]].forEach(p => {
+                        stats[p].wins++;
+                        stats[p].money += 50000;
+                    });
+                    [m.pair1[0], m.pair1[1]].forEach(p => {
+                        stats[p].losses++;
+                        stats[p].money -= 50000;
+                    });
                 }
             });
 
-            const sorted = Object.entries(playerMoney).sort((a, b) => b[1].money - a[1].money);
-            const tbody = document.getElementById('rankingMoneyBody');
+            const ranking = Object.entries(stats)
+                .map(([name, data]) => ({ name, ...data }))
+                .sort((a, b) => b.money - a.money);
 
-            if (sorted.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Chưa có dữ liệu</td></tr>';
-                return;
-            }
+            const rankingHtml = ranking.length > 0
+                ? ranking.map((r, i) => `
+                    <div class="member-item">
+                        <div>
+                            <div class="member-name">${i + 1}. ${r.name}</div>
+                            <div class="match-score">${r.wins}W / ${r.losses}L</div>
+                        </div>
+                        <div style="font-weight: 600; color: ${r.money >= 0 ? 'green' : 'red'};">
+                            ${r.money >= 0 ? '+' : ''}${(r.money / 1000).toFixed(0)}k
+                        </div>
+                    </div>
+                `).join('')
+                : '<div class="empty-state"><p>Chưa có dữ liệu</p></div>';
 
-            tbody.innerHTML = sorted.map(([name, data], i) => `
-                <tr>
-                    <td><span class="rank-badge ${i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : ''}">${i + 1}</span></td>
-                    <td>${name}</td>
-                    <td>${data.matches}</td>
-                    <td><span class="money ${data.money >= 0 ? 'positive' : 'negative'}">${data.money >= 0 ? '+' : ''}${data.money}k</span></td>
-                </tr>
-            `).join('');
+            document.getElementById('rankingList').innerHTML = rankingHtml;
         }
 
-        function updateRankingSkill() {
-            const playerStats = {};
-
-            matches.forEach(m => {
-                const [p1a, p1b] = m.pair1.split(' - ').map(x => x.trim());
-                const [p2a, p2b] = m.pair2.split(' - ').map(x => x.trim());
-
-                [p1a, p1b, p2a, p2b].forEach(name => {
-                    if (!playerStats[name]) playerStats[name] = { wins: 0, matches: 0 };
-                    playerStats[name].matches++;
-                    if ((m.pair1.includes(name) && m.result1 === 'win') || (m.pair2.includes(name) && m.result2 === 'win')) {
-                        playerStats[name].wins++;
-                    }
-                });
-            });
-
-            const filtered = Object.entries(playerStats)
-                .filter(([_, s]) => s.matches >= 5)
-                .sort((a, b) => (b[1].wins / b[1].matches) - (a[1].wins / a[1].matches));
-
-            const tbody = document.getElementById('rankingSkillBody');
-
-            if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Chưa có VĐV ≥5 trận</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = filtered.map(([name, stats], i) => {
-                const wr = ((stats.wins / stats.matches) * 100).toFixed(1);
-                return `
-                    <tr>
-                        <td><span class="rank-badge ${i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : ''}">${i + 1}</span></td>
-                        <td>${name}</td>
-                        <td>${stats.matches}</td>
-                        <td>${wr}%</td>
-                    </tr>
-                `;
-            }).join('');
+        function switchTab(event, tabName) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
         }
 
-        function updateRankingScore() {
-            const playerScore = {};
-
-            matches.forEach(m => {
-                const [p1a, p1b] = m.pair1.split(' - ').map(x => x.trim());
-                const [p2a, p2b] = m.pair2.split(' - ').map(x => x.trim());
-
-                if (m.result1 === 'win') {
-                    playerScore[p1a] = (playerScore[p1a] || { score: 0, wins: 0, losses: 0, totalScore1: 0, totalScore2: 0 });
-                    playerScore[p1b] = (playerScore[p1b] || { score: 0, wins: 0, losses: 0, totalScore1: 0, totalScore2: 0 });
-                    playerScore[p1a].score += 1;
-                    playerScore[p1b].score += 1;
-                    playerScore[p1a].wins++;
-                    playerScore[p1b].wins++;
-                    playerScore[p1a].totalScore1 += m.score1;
-                    playerScore[p1b].totalScore1 += m.score1;
-                    playerScore[p1a].totalScore2 += m.score2;
-                    playerScore[p1b].totalScore2 += m.score2;
-                    playerScore[p2a] = (playerScore[p2a] || { score: 0, wins: 0, losses: 0, totalScore1: 0, totalScore2: 0 });
-                    playerScore[p2b] = (playerScore[p2b] || { score: 0, wins: 0, losses: 0, totalScore1: 0, totalScore2: 0 });
-                    playerScore[p2a].score -= 1;
-                    playerScore[p2b].score -= 1;
-                    playerScore[p2a].losses++;
-                    playerScore[p2b].losses++;
-                    playerScore[p2a].totalScore1 += m.score2;
-                    playerScore[p2b].totalScore1 += m.score2;
-                    playerScore[p2a].totalScore2 += m.score1;
-                    playerScore[p2b].totalScore2 += m.score1;
-                } else {
-                    playerScore[p2a] = (playerScore[p2a] || { score: 0, wins: 0, losses: 0, totalScore1: 0, totalScore2: 0 });
-                    playerScore[p2b] = (playerScore[p2b] || { score: 0, wins: 0, losses: 0, totalScore1: 0, totalScore2: 0 });
-                    playerScore[p2a].score += 1;
-                    playerScore[p2b].score += 1;
-                    playerScore[p2a].wins++;
-                    playerScore[p2b].wins++;
-                    playerScore[p2a].totalScore1 += m.score2;
-                    playerScore[p2b].totalScore1 += m.score2;
-                    playerScore[p2a].totalScore2 += m.score1;
-                    playerScore[p2b].totalScore2 += m.score1;
-                    playerScore[p1a] = (playerScore[p1a] || { score: 0, wins: 0, losses: 0, totalScore1: 0, totalScore2: 0 });
-                    playerScore[p1b] = (playerScore[p1b] || { score: 0, wins: 0, losses: 0, totalScore1: 0, totalScore2: 0 });
-                    playerScore[p1a].score -= 1;
-                    playerScore[p1b].score -= 1;
-                    playerScore[p1a].losses++;
-                    playerScore[p1b].losses++;
-                    playerScore[p1a].totalScore1 += m.score1;
-                    playerScore[p1b].totalScore1 += m.score1;
-                    playerScore[p1a].totalScore2 += m.score2;
-                    playerScore[p1b].totalScore2 += m.score2;
-                }
-            });
-
-            const sorted = Object.entries(playerScore).sort((a, b) => b[1].score - a[1].score);
-            const tbody = document.getElementById('rankingScoreBody');
-
-            if (sorted.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Chưa có dữ liệu</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = sorted.map(([name, data], i) => {
-                const scoreDiff = data.totalScore1 - data.totalScore2;
-                return `
-                    <tr>
-                        <td><span class="rank-badge ${i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : ''}">${i + 1}</span></td>
-                        <td>${name}</td>
-                        <td>${data.wins}/${data.losses}</td>
-                        <td><span class="money ${data.score >= 0 ? 'positive' : 'negative'}">${data.score >= 0 ? '+' : ''}${data.score}đ</span></td>
-                        <td><span class="money ${scoreDiff >= 0 ? 'positive' : 'negative'}">${scoreDiff >= 0 ? '+' : ''}${scoreDiff}</span></td>
-                    </tr>
-                `;
-            }).join('');
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = `message ${type}`;
+            setTimeout(() => {
+                msg.className = 'message';
+            }, 3000);
         }
-
-        async function manualSaveFirebase() {
-            setSyncLoading(true);
-            try {
-                await set(ref(database, 'pickleball'), { 
-                    members, 
-                    schedules, 
-                    matches, 
-                    adminPassword,
-                    readOnlyMode: true,
-                    lastSync: new Date().toISOString() 
-                });
-                setSyncLoading(false);
-                showNotification('✅ Lưu Firebase thành công!', 'success');
-            } catch (e) {
-                setSyncLoading(false);
-                showNotification('❌ Lưu thất bại', 'error');
-            }
-        }
-
-        async function manualLoadFirebase() {
-            setSyncLoading(true);
-            try {
-                const snapshot = await get(ref(database, 'pickleball'));
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    members = data.members || [];
-                    schedules = data.schedules || [];
-                    matches = data.matches || [];
-                    adminPassword = data.adminPassword || 'Tayho';
-                    saveData();
-                    localStorage.setItem('adminPassword', adminPassword);
-                    updateMembersList();
-                    updatePairSelects();
-                    updateScheduleList();
-                    updateScheduleSelects();
-                    updateMatchList();
-                    applyReadOnlyMode();
-                    updateSettingsUI();
-                    setSyncLoading(false);
-                    showNotification('✅ Tải Firebase thành công!', 'success');
-                } else {
-                    setSyncLoading(false);
-                    showNotification('⚠️ Không có dữ liệu', 'info');
-                }
-            } catch (e) {
-                setSyncLoading(false);
-                showNotification('❌ Tải thất bại', 'error');
-            }
-        }
-
-        async function autoSync() {
-            try {
-                await set(ref(database, 'pickleball'), { 
-                    members, 
-                    schedules, 
-                    matches, 
-                    adminPassword,
-                    readOnlyMode: true,
-                    lastSync: new Date().toISOString() 
-                });
-            } catch (e) {}
-        }
-
-        function setSyncLoading(loading) {
-            const status = document.getElementById('syncStatus');
-            const text = document.getElementById('syncText');
-            if (loading) {
-                status.classList.add('loading');
-                text.textContent = 'Đang đồng bộ...';
-            } else {
-                status.classList.remove('loading');
-                text.textContent = 'Sẵn sàng đồng bộ';
-            }
-        }
-
-        window.toggleAutoSync = function() {
-            showNotification('✅ Tự động đồng bộ luôn bật', 'info');
-        };
-
-        window.toggleReadOnlyWithPassword = toggleReadOnlyWithPassword;
-        window.manualSaveFirebase = manualSaveFirebase;
-        window.manualLoadFirebase = manualLoadFirebase;
-        window.switchTab = switchTab;
-        window.addMember = addMember;
-        window.deleteMember = deleteMember;
-        window.addSchedule = addSchedule;
-        window.deleteSchedule = deleteSchedule;
-        window.updateMatchForm = updateMatchForm;
-        window.addMatch = addMatch;
-        window.deleteMatch = deleteMatch;
-        window.updatePaymentList = updatePaymentList;
-
-        window.exportData = function() {
-            const data = JSON.stringify({ members, schedules, matches }, null, 2);
-            const blob = new Blob([data], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'pickleball-data.json';
-            a.click();
-            showNotification('✅ Tải về thành công!', 'success');
-        };
-
-        window.clearAllData = function() {
-            if (!confirm('⚠️ Xóa tất cả? (không thể hoàn tác)')) return;
-            members = [];
-            schedules = [];
-            matches = [];
-            saveData();
-            updateMembersList();
-            updateScheduleList();
-            updateMatchList();
-            document.getElementById('paymentList').innerHTML = '';
-            document.getElementById('rankingMoneyBody').innerHTML = '<tr><td colspan="4" class="empty-state">Chưa có dữ liệu</td></tr>';
-            document.getElementById('rankingSkillBody').innerHTML = '<tr><td colspan="4" class="empty-state">Chưa có dữ liệu</td></tr>';
-            document.getElementById('rankingScoreBody').innerHTML = '<tr><td colspan="5" class="empty-state">Chưa có dữ liệu</td></tr>';
-            showNotification('Đã xóa tất cả', 'success');
-            autoSync();
-        };
-
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            setTimeout(() => notification.remove(), 3000);
-        }
-
-        function saveData() {
-            localStorage.setItem('members', JSON.stringify(members));
-            localStorage.setItem('schedules', JSON.stringify(schedules));
-            localStorage.setItem('matches', JSON.stringify(matches));
-        }
-
-        // Init
-        updateMembersList();
-        updatePairSelects();
-        updateScheduleList();
-        updateScheduleSelects();
-        updateMatchList();
-        document.getElementById('autoSyncBtn').textContent = '✅ Tự Động Đồng Bộ (BẬT)';
-        applyReadOnlyMode();
-        updateSettingsUI();
-
-        window.addEventListener('load', () => {
-            setTimeout(() => manualLoadFirebase(), 500);
-        });
     </script>
 </body>
 </html>
