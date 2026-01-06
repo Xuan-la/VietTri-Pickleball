@@ -6,6 +6,7 @@
     <title>Quản Lý CLB Pickleball - Tính Tiền</title>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"></script>
     <style>
         :root {
             --color-primary: #208791;
@@ -685,52 +686,102 @@
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+        const auth = firebase.auth();
 
         // Global variables
         let members = [];
         let allMatches = [];
         let scheduleList = [];
         const dbPath = 'pickleball_club';
+        let isInitialized = false;
 
-        // Initialize
-        loadPlayerSelects();
-        loadSchedules();
-        updateMembersList();
-        loadDataFromFirebase();
+        // Auto login and initialize
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                console.log('✓ Đã đăng nhập:', user.uid);
+                if (!isInitialized) {
+                    isInitialized = true;
+                    loadPlayerSelects();
+                    loadSchedules();
+                    updateMembersList();
+                    loadDataFromFirebase();
+                }
+            } else {
+                // Auto sign in anonymously
+                auth.signInAnonymously()
+                    .catch(error => {
+                        console.error('Lỗi đăng nhập:', error);
+                        showMessage(`❌ Lỗi kết nối Firebase: ${error.message}`, 'error');
+                    });
+            }
+        });
 
         function loadDataFromFirebase() {
             const membersRef = db.ref(dbPath + '/members');
             const matchesRef = db.ref(dbPath + '/allMatches');
             const scheduleRef = db.ref(dbPath + '/scheduleList');
 
+            console.log('Đang tải dữ liệu từ Firebase...');
+
             membersRef.on('value', snap => {
                 members = [];
-                snap.forEach(child => {
-                    members.push(child.val());
-                });
+                if (snap.exists()) {
+                    snap.forEach(child => {
+                        const val = child.val();
+                        if (val && val.id) {
+                            members.push(val);
+                        }
+                    });
+                    console.log('✓ Tải thành viên:', members.length);
+                } else {
+                    console.log('Chưa có dữ liệu thành viên');
+                }
                 updateMembersList();
                 loadPlayerSelects();
+            }, error => {
+                console.error('Lỗi tải thành viên:', error);
+                showMessage(`❌ Lỗi tải dữ liệu: ${error.message}`, 'error');
             });
 
             matchesRef.on('value', snap => {
                 allMatches = [];
-                snap.forEach(child => {
-                    allMatches.push(child.val());
-                });
+                if (snap.exists()) {
+                    snap.forEach(child => {
+                        const val = child.val();
+                        if (val && val.id) {
+                            allMatches.push(val);
+                        }
+                    });
+                    console.log('✓ Tải trận đấu:', allMatches.length);
+                } else {
+                    console.log('Chưa có dữ liệu trận đấu');
+                }
                 updateMatchList();
                 updatePaymentList();
                 updateRankingMoney();
                 updateRankingSkill();
                 updateHistory();
+            }, error => {
+                console.error('Lỗi tải trận đấu:', error);
             });
 
             scheduleRef.on('value', snap => {
                 scheduleList = [];
-                snap.forEach(child => {
-                    scheduleList.push(child.val());
-                });
-                scheduleList.sort((a, b) => new Date(a.date) - new Date(b.date));
+                if (snap.exists()) {
+                    snap.forEach(child => {
+                        const val = child.val();
+                        if (val && val.id) {
+                            scheduleList.push(val);
+                        }
+                    });
+                    scheduleList.sort((a, b) => new Date(a.date) - new Date(b.date));
+                    console.log('✓ Tải lịch sinh hoạt:', scheduleList.length);
+                } else {
+                    console.log('Chưa có dữ liệu lịch sinh hoạt');
+                }
                 loadSchedules();
+            }, error => {
+                console.error('Lỗi tải lịch sinh hoạt:', error);
             });
         }
 
@@ -772,11 +823,12 @@
                 return;
             }
 
-            const memberId = Date.now().toString();
+            const memberId = 'member_' + Date.now();
             const memberData = {
                 id: memberId,
                 name: name,
-                type: type
+                type: type,
+                createdAt: new Date().toISOString()
             };
 
             db.ref(dbPath + '/members/' + memberId).set(memberData)
@@ -786,6 +838,7 @@
                     document.getElementById('memberType').value = 'club';
                 })
                 .catch(error => {
+                    console.error('Lỗi:', error);
                     showMessage(`❌ Lỗi: ${error.message}`, 'error');
                 });
         }
@@ -885,8 +938,13 @@
                 return;
             }
 
-            const scheduleId = Date.now().toString();
-            const scheduleData = { id: scheduleId, date, note };
+            const scheduleId = 'schedule_' + Date.now();
+            const scheduleData = { 
+                id: scheduleId, 
+                date, 
+                note,
+                createdAt: new Date().toISOString()
+            };
 
             db.ref(dbPath + '/scheduleList/' + scheduleId).set(scheduleData)
                 .then(() => {
@@ -895,6 +953,7 @@
                     document.getElementById('scheduleNote').value = '';
                 })
                 .catch(error => {
+                    console.error('Lỗi:', error);
                     showMessage(`❌ Lỗi: ${error.message}`, 'error');
                 });
         }
@@ -963,7 +1022,7 @@
                 return;
             }
 
-            const matchId = Date.now().toString();
+            const matchId = 'match_' + Date.now();
             const match = {
                 id: matchId,
                 pair1: [pair1vdv1, pair1vdv2],
@@ -972,7 +1031,8 @@
                 score2: score2,
                 date: eventDate,
                 result1: score1 > score2 ? 'win' : 'lose',
-                result2: score2 > score1 ? 'win' : 'lose'
+                result2: score2 > score1 ? 'win' : 'lose',
+                createdAt: new Date().toISOString()
             };
 
             db.ref(dbPath + '/allMatches/' + matchId).set(match)
@@ -986,6 +1046,7 @@
                     document.getElementById('pair2vdv2').value = '';
                 })
                 .catch(error => {
+                    console.error('Lỗi:', error);
                     showMessage(`❌ Lỗi: ${error.message}`, 'error');
                 });
         }
