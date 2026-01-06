@@ -681,9 +681,7 @@
             storageBucket: "vietri-c414e.firebasestorage.app",
             messagingSenderId: "149479382894",
             appId: "1:149479382894:web:9408a8cc797ef22fe42b7f"
-        };
-
-        // Initialize Firebase
+        };        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const auth = firebase.auth();
@@ -694,19 +692,24 @@
         let scheduleList = [];
         const dbPath = 'pickleball_club';
         let isInitialized = false;
+        let currentUser = null;
 
         // Auto login and initialize
         auth.onAuthStateChanged(user => {
+            currentUser = user;
             if (user) {
                 console.log('✓ Đã đăng nhập:', user.uid);
                 if (!isInitialized) {
                     isInitialized = true;
-                    loadPlayerSelects();
-                    loadSchedules();
-                    updateMembersList();
-                    loadDataFromFirebase();
+                    setTimeout(() => {
+                        loadPlayerSelects();
+                        loadSchedules();
+                        updateMembersList();
+                        loadDataFromFirebase();
+                    }, 500);
                 }
             } else {
+                console.log('Đang đăng nhập Anonymous...');
                 // Auto sign in anonymously
                 auth.signInAnonymously()
                     .catch(error => {
@@ -716,45 +719,53 @@
             }
         });
 
+        // Test Firebase connection
+        setTimeout(() => {
+            if (!currentUser) {
+                console.warn('⚠️ Chưa xác thực người dùng, kiểm tra Firebase config');
+            }
+        }, 3000);
+
         function loadDataFromFirebase() {
+            if (!currentUser) {
+                console.error('Chưa xác thực người dùng');
+                return;
+            }
+
             const membersRef = db.ref(dbPath + '/members');
             const matchesRef = db.ref(dbPath + '/allMatches');
             const scheduleRef = db.ref(dbPath + '/scheduleList');
 
-            console.log('Đang tải dữ liệu từ Firebase...');
+            console.log('🔄 Đang tải dữ liệu từ Firebase...');
 
+            // Load members with realtime sync
             membersRef.on('value', snap => {
                 members = [];
                 if (snap.exists()) {
                     snap.forEach(child => {
-                        const val = child.val();
-                        if (val && val.id) {
-                            members.push(val);
-                        }
+                        members.push(child.val());
                     });
-                    console.log('✓ Tải thành viên:', members.length);
+                    console.log('✓ Thành viên:', members.length);
                 } else {
-                    console.log('Chưa có dữ liệu thành viên');
+                    console.log('Chưa có thành viên');
                 }
                 updateMembersList();
                 loadPlayerSelects();
             }, error => {
-                console.error('Lỗi tải thành viên:', error);
-                showMessage(`❌ Lỗi tải dữ liệu: ${error.message}`, 'error');
+                console.error('Lỗi tải thành viên:', error.code, error.message);
+                showMessage(`❌ Lỗi tải thành viên: ${error.message}`, 'error');
             });
 
+            // Load matches with realtime sync
             matchesRef.on('value', snap => {
                 allMatches = [];
                 if (snap.exists()) {
                     snap.forEach(child => {
-                        const val = child.val();
-                        if (val && val.id) {
-                            allMatches.push(val);
-                        }
+                        allMatches.push(child.val());
                     });
-                    console.log('✓ Tải trận đấu:', allMatches.length);
+                    console.log('✓ Trận đấu:', allMatches.length);
                 } else {
-                    console.log('Chưa có dữ liệu trận đấu');
+                    console.log('Chưa có trận đấu');
                 }
                 updateMatchList();
                 updatePaymentList();
@@ -762,26 +773,24 @@
                 updateRankingSkill();
                 updateHistory();
             }, error => {
-                console.error('Lỗi tải trận đấu:', error);
+                console.error('Lỗi tải trận đấu:', error.code, error.message);
             });
 
+            // Load schedules with realtime sync
             scheduleRef.on('value', snap => {
                 scheduleList = [];
                 if (snap.exists()) {
                     snap.forEach(child => {
-                        const val = child.val();
-                        if (val && val.id) {
-                            scheduleList.push(val);
-                        }
+                        scheduleList.push(child.val());
                     });
                     scheduleList.sort((a, b) => new Date(a.date) - new Date(b.date));
-                    console.log('✓ Tải lịch sinh hoạt:', scheduleList.length);
+                    console.log('✓ Lịch sinh hoạt:', scheduleList.length);
                 } else {
-                    console.log('Chưa có dữ liệu lịch sinh hoạt');
+                    console.log('Chưa có lịch sinh hoạt');
                 }
                 loadSchedules();
             }, error => {
-                console.error('Lỗi tải lịch sinh hoạt:', error);
+                console.error('Lỗi tải lịch sinh hoạt:', error.code, error.message);
             });
         }
 
@@ -831,14 +840,17 @@
                 createdAt: new Date().toISOString()
             };
 
+            console.log('Thêm thành viên:', memberData);
+
             db.ref(dbPath + '/members/' + memberId).set(memberData)
                 .then(() => {
+                    console.log('✓ Thêm thành công');
                     showMessage(`✓ Đã thêm VĐV: ${name}`, 'success');
                     document.getElementById('memberName').value = '';
                     document.getElementById('memberType').value = 'club';
                 })
                 .catch(error => {
-                    console.error('Lỗi:', error);
+                    console.error('❌ Lỗi thêm thành viên:', error.code, error.message);
                     showMessage(`❌ Lỗi: ${error.message}`, 'error');
                 });
         }
@@ -946,14 +958,17 @@
                 createdAt: new Date().toISOString()
             };
 
+            console.log('Thêm lịch sinh hoạt:', scheduleData);
+
             db.ref(dbPath + '/scheduleList/' + scheduleId).set(scheduleData)
                 .then(() => {
+                    console.log('✓ Thêm lịch thành công');
                     showMessage('✓ Đã thêm ngày sinh hoạt', 'success');
                     document.getElementById('scheduleDate').value = '';
                     document.getElementById('scheduleNote').value = '';
                 })
                 .catch(error => {
-                    console.error('Lỗi:', error);
+                    console.error('❌ Lỗi thêm lịch:', error.code, error.message);
                     showMessage(`❌ Lỗi: ${error.message}`, 'error');
                 });
         }
