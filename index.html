@@ -346,7 +346,7 @@
 
         <div class="sync-status" id="syncStatus">
             <span class="sync-indicator"></span>
-            <span id="syncText">Sẵn sàng đồng bộ</span>
+            <span id="syncText">Đang tải dữ liệu...</span>
         </div>
 
         <div class="tabs">
@@ -1210,6 +1210,35 @@
             setTimeout(() => notification.remove(), 3000);
         }
 
+        // Tự động tải dữ liệu từ Firebase khi trang mở
+        async function initializeApp() {
+            setSyncLoading(true);
+            try {
+                const snapshot = await get(ref(database, 'VietTri'));
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    members = data.members || [];
+                    schedules = data.schedules || [];
+                    matches = data.matches || [];
+                    adminPassword = data.adminPassword || 'Tayho';
+                    updateMembersList();
+                    updatePairSelects();
+                    updateScheduleList();
+                    updateScheduleSelects();
+                    updateMatchList();
+                    applyReadOnlyMode();
+                    updateSettingsUI();
+                    console.log('✅ Tải dữ liệu VietTri từ Firebase thành công!');
+                } else {
+                    console.log('⚠️ Chưa có dữ liệu trong VietTri');
+                }
+            } catch (e) {
+                console.error('❌ Lỗi tải dữ liệu:', e.message);
+            } finally {
+                setSyncLoading(false);
+            }
+        }
+
         updateMembersList();
         updatePairSelects();
         updateScheduleList();
@@ -1219,9 +1248,9 @@
         applyReadOnlyMode();
         updateSettingsUI();
 
-        window.addEventListener('load', () => {
-            setTimeout(() => manualLoadFirebase(), 500);
-        });
+        // Khởi tạo ứng dụng ngay khi trang load
+        window.addEventListener('DOMContentLoaded', initializeApp);
+        window.addEventListener('load', initializeApp);
     </script>
 </body>
 </html>
