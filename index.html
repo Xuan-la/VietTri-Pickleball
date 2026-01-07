@@ -1092,7 +1092,7 @@
         async function manualSaveFirebase() {
             setSyncLoading(true);
             try {
-                await set(ref(database, 'pickleball'), { 
+                await set(ref(database, 'VietTri'), { 
                     members, 
                     schedules, 
                     matches, 
@@ -1111,7 +1111,7 @@
         async function manualLoadFirebase() {
             setSyncLoading(true);
             try {
-                const snapshot = await get(ref(database, 'pickleball'));
+                const snapshot = await get(ref(database, 'VietTri'));
                 if (snapshot.exists()) {
                     const data = snapshot.val();
                     members = data.members || [];
@@ -1141,7 +1141,7 @@
 
         async function autoSync() {
             try {
-                await set(ref(database, 'pickleball'), { 
+                await set(ref(database, 'VietTri'), { 
                     members, 
                     schedules, 
                     matches, 
@@ -1187,7 +1187,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'pickleball-data.json';
+            a.download = 'VietTri-data.json';
             a.click();
             showNotification('✅ Tải về thành công!', 'success');
         };
