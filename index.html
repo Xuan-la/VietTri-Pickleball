@@ -361,7 +361,6 @@
             <button class="tab-btn" onclick="switchTab(event, 'settings')">🔐 Cài Đặt</button>
         </div>
 
-        <!-- Tab VĐV -->
         <div id="members" class="tab-content active">
             <h2>➕ Thêm Thành Viên/Khách</h2>
             <div class="row">
@@ -378,12 +377,10 @@
                 </div>
             </div>
             <button class="btn" onclick="addMember()">➕ Thêm VĐV</button>
-
             <h2>👥 Danh Sách Thành Viên</h2>
             <div class="member-list" id="membersList"></div>
         </div>
 
-        <!-- Tab Lịch Sinh Hoạt -->
         <div id="schedule" class="tab-content">
             <h2>📅 Thêm Lịch Sinh Hoạt</h2>
             <div class="row">
@@ -397,12 +394,10 @@
                 </div>
             </div>
             <button class="btn" onclick="addSchedule()">📅 Thêm Ngày</button>
-
             <h2>Danh Sách Lịch Sinh Hoạt</h2>
             <div class="member-list" id="scheduleList"></div>
         </div>
 
-        <!-- Tab Trận Đấu -->
         <div id="matches" class="tab-content">
             <h2>🎾 Ghi Lại Trận Đấu</h2>
             <div class="form-group">
@@ -411,54 +406,41 @@
                     <option value="">-- Chọn ngày --</option>
                 </select>
             </div>
-
             <h3>Cặp 1</h3>
             <div class="row">
                 <div class="form-group">
                     <label>VĐV 1</label>
-                    <select id="pair1a">
-                        <option value="">-- Chọn --</option>
-                    </select>
+                    <select id="pair1a"><option value="">-- Chọn --</option></select>
                 </div>
                 <div class="form-group">
                     <label>VĐV 2</label>
-                    <select id="pair1b">
-                        <option value="">-- Chọn --</option>
-                    </select>
+                    <select id="pair1b"><option value="">-- Chọn --</option></select>
                 </div>
             </div>
             <div class="form-group">
                 <label>Tỷ Số</label>
                 <input type="number" id="score1" placeholder="15" min="0">
             </div>
-
             <h3>Cặp 2</h3>
             <div class="row">
                 <div class="form-group">
                     <label>VĐV 1</label>
-                    <select id="pair2a">
-                        <option value="">-- Chọn --</option>
-                    </select>
+                    <select id="pair2a"><option value="">-- Chọn --</option></select>
                 </div>
                 <div class="form-group">
                     <label>VĐV 2</label>
-                    <select id="pair2b">
-                        <option value="">-- Chọn --</option>
-                    </select>
+                    <select id="pair2b"><option value="">-- Chọn --</option></select>
                 </div>
             </div>
             <div class="form-group">
                 <label>Tỷ Số</label>
                 <input type="number" id="score2" placeholder="10" min="0">
             </div>
-
             <button class="btn" onclick="addMatch()">➕ Thêm Trận Đấu</button>
-
             <h2>Danh Sách Trận Đấu</h2>
             <div class="member-list" id="matchList"></div>
         </div>
 
-        <!-- Tab Tính Tiền -->
         <div id="payment" class="tab-content">
             <h2>💳 Bảng Tính Tiền</h2>
             <div class="form-group">
@@ -470,83 +452,41 @@
             <div id="paymentList"></div>
         </div>
 
-        <!-- Tab BXH Tiền -->
         <div id="ranking-money" class="tab-content">
             <h2>💰 Bảng Xếp Hạng Tiền (Năm Dương Lịch)</h2>
             <table class="ranking-table">
-                <thead>
-                    <tr>
-                        <th>Hạng</th>
-                        <th>Tên VĐV</th>
-                        <th>Trận</th>
-                        <th>Tiền (k)</th>
-                    </tr>
-                </thead>
-                <tbody id="rankingMoneyBody">
-                    <tr>
-                        <td colspan="4" class="empty-state" style="padding: 40px 20px;">Chưa có dữ liệu</td>
-                    </tr>
-                </tbody>
+                <thead><tr><th>Hạng</th><th>Tên VĐV</th><th>Trận</th><th>Tiền (k)</th></tr></thead>
+                <tbody id="rankingMoneyBody"><tr><td colspan="4" class="empty-state">Chưa có dữ liệu</td></tr></tbody>
             </table>
         </div>
 
-        <!-- Tab BXH Trình Độ -->
         <div id="ranking-skill" class="tab-content">
             <h2>⭐ Bảng Xếp Hạng Trình Độ (≥5 Trận)</h2>
             <table class="ranking-table">
-                <thead>
-                    <tr>
-                        <th>Hạng</th>
-                        <th>Tên VĐV</th>
-                        <th>Trận</th>
-                        <th>Thắng %</th>
-                    </tr>
-                </thead>
-                <tbody id="rankingSkillBody">
-                    <tr>
-                        <td colspan="4" class="empty-state" style="padding: 40px 20px;">Chưa có dữ liệu</td>
-                    </tr>
-                </tbody>
+                <thead><tr><th>Hạng</th><th>Tên VĐV</th><th>Trận</th><th>Thắng %</th></tr></thead>
+                <tbody id="rankingSkillBody"><tr><td colspan="4" class="empty-state">Chưa có dữ liệu</td></tr></tbody>
             </table>
         </div>
 
-        <!-- Tab BXH Điểm Số -->
         <div id="ranking-score" class="tab-content">
             <h2>🏆 Bảng Xếp Hạng Điểm Số</h2>
             <table class="ranking-table">
-                <thead>
-                    <tr>
-                        <th>Hạng</th>
-                        <th>Tên VĐV</th>
-                        <th>W/L</th>
-                        <th>Điểm</th>
-                        <th>Hiệu Số</th>
-                    </tr>
-                </thead>
-                <tbody id="rankingScoreBody">
-                    <tr>
-                        <td colspan="5" class="empty-state" style="padding: 40px 20px;">Chưa có dữ liệu</td>
-                    </tr>
-                </tbody>
+                <thead><tr><th>Hạng</th><th>Tên VĐV</th><th>W/L</th><th>Điểm</th><th>Hiệu Số</th></tr></thead>
+                <tbody id="rankingScoreBody"><tr><td colspan="5" class="empty-state">Chưa có dữ liệu</td></tr></tbody>
             </table>
         </div>
 
-        <!-- Tab Cài Đặt -->
         <div id="settings" class="tab-content">
             <h2>🔐 Cài Đặt Bảo Mật</h2>
             <div class="form-group">
-                <label>
-                    <strong>⚠️ Chế Độ Xem (Chỉ Đọc) - Luôn Bật</strong>
-                </label>
-                <p class="info-text" style="margin-top: 8px;">Chế độ xem luôn bật. Nhập mật khẩu để tạm tắt trong 5 phút.</p>
+                <label><strong>⚠️ Chế Độ Xem (Chỉ Đọc) - Luôn Bật</strong></label>
+                <p class="info-text">Chế độ xem luôn bật. Nhập mật khẩu để tạm tắt trong 5 phút.</p>
                 <button class="btn warning" onclick="toggleReadOnlyWithPassword()">🔓 Tắt Chế Độ Xem (5 phút)</button>
             </div>
-
             <div class="info-text" style="margin-top: 20px; background: rgba(192, 21, 47, 0.1); padding: 12px; border-radius: 8px;">
                 ⚠️ <strong>Chế Độ Xem:</strong> Khi bật, chỉ khóa nút Thêm / Ghi / Xóa<br>
                 ⚠️ <strong>Mật Khẩu:</strong> Được lưu và đồng bộ trên Cloud Firebase
             </div>
-
             <h3 style="margin-top: 30px;">Trạng Thái Hiện Tại</h3>
             <div class="payment-item">
                 <div class="payment-name">Chế Độ</div>
@@ -558,7 +498,6 @@
             </div>
         </div>
 
-        <!-- Tab Backup -->
         <div id="backup" class="tab-content">
             <h2>💾 Sao Lưu & Đồng Bộ</h2>
             <button class="btn success" onclick="toggleAutoSync()" id="autoSyncBtn">🔄 Tự Động Đồng Bộ Firebase</button>
@@ -566,7 +505,6 @@
             <button class="btn" onclick="manualLoadFirebase()">📥 Tải Từ Firebase</button>
             <button class="btn" onclick="exportData()">📥 Tải Về (JSON)</button>
             <button class="btn danger" onclick="clearAllData()">🗑️ Xóa Tất Cả</button>
-
             <div class="info-text" style="margin-top: 20px; background: rgba(34, 199, 90, 0.1); padding: 12px; border-radius: 8px;">
                 ✓ Dữ liệu được lưu trên máy tính + Firebase Cloud<br>
                 ✓ 100% offline - không cần internet<br>
@@ -575,7 +513,6 @@
         </div>
     </div>
 
-    <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
         import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
@@ -596,7 +533,6 @@
         let members = [];
         let schedules = [];
         let matches = [];
-        let autoSyncEnabled = true;
         let readOnlyMode = true;
         let adminPassword = 'Tayho';
 
@@ -605,7 +541,6 @@
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById(tabName).classList.add('active');
             event.target.classList.add('active');
-
             if (tabName === 'ranking-money') updateRankingMoney();
             else if (tabName === 'ranking-skill') updateRankingSkill();
             else if (tabName === 'ranking-score') updateRankingScore();
@@ -616,8 +551,6 @@
         function updateSettingsUI() {
             document.getElementById('modeStatus').textContent = readOnlyMode ? '🔒 Chỉ Xem (Bật)' : '✏️ Chỉnh Sửa (Tạm thời)';
             document.getElementById('modeStatus').className = readOnlyMode ? 'money negative' : 'money positive';
-            document.getElementById('syncStatus2').textContent = '✓ Tự Động';
-            document.getElementById('syncStatus2').className = 'money positive';
         }
 
         function toggleReadOnlyWithPassword() {
@@ -642,8 +575,7 @@
 
         function applyReadOnlyMode() {
             const disableButtonsText = ['Thêm', 'Ghi', 'Xóa'];
-            const buttons = document.querySelectorAll('.btn');
-            buttons.forEach(btn => {
+            document.querySelectorAll('.btn').forEach(btn => {
                 const text = btn.textContent || '';
                 const isAction = disableButtonsText.some(t => text.includes(t)) && !text.includes('Tải') && !text.includes('Firebase');
                 if (isAction) {
@@ -652,13 +584,25 @@
                     btn.style.cursor = readOnlyMode ? 'not-allowed' : 'pointer';
                 }
             });
-
-            const deleteButtons = document.querySelectorAll('.delete-btn');
-            deleteButtons.forEach(btn => {
+            document.querySelectorAll('.delete-btn').forEach(btn => {
                 btn.disabled = readOnlyMode;
                 btn.style.opacity = readOnlyMode ? '0.5' : '1';
-                btn.style.cursor = readOnlyMode ? 'not-allowed' : 'pointer';
             });
+        }
+
+        function saveData() {
+            localStorage.setItem('VietTri_members', JSON.stringify(members));
+            localStorage.setItem('VietTri_schedules', JSON.stringify(schedules));
+            localStorage.setItem('VietTri_matches', JSON.stringify(matches));
+        }
+
+        function loadLocalData() {
+            const m = localStorage.getItem('VietTri_members');
+            const s = localStorage.getItem('VietTri_schedules');
+            const mt = localStorage.getItem('VietTri_matches');
+            if (m) members = JSON.parse(m);
+            if (s) schedules = JSON.parse(s);
+            if (mt) matches = JSON.parse(mt);
         }
 
         function addMember() {
@@ -779,8 +723,7 @@
 
         function updatePairSelects() {
             const playerNames = members.map(m => m.name);
-            const selectIds = ['pair1a', 'pair1b', 'pair2a', 'pair2b'];
-            selectIds.forEach(id => {
+            ['pair1a', 'pair1b', 'pair2a', 'pair2b'].forEach(id => {
                 const elem = document.getElementById(id);
                 const value = elem.value;
                 elem.innerHTML = '<option value="">-- Chọn --</option>' + playerNames.map(p => `<option value="${p}">${p}</option>`).join('');
@@ -788,9 +731,7 @@
             });
         }
 
-        function updateMatchForm() {
-            if (!document.getElementById('eventDate').value) return;
-        }
+        function updateMatchForm() {}
 
         function addMatch() {
             const date = document.getElementById('eventDate').value;
@@ -801,30 +742,16 @@
             const score1 = parseInt(document.getElementById('score1').value) || 0;
             const score2 = parseInt(document.getElementById('score2').value) || 0;
 
-            if (!date) {
-                showNotification('Vui lòng chọn ngày sinh hoạt', 'error');
-                return;
-            }
-            if (!p1a || !p1b || !p2a || !p2b) {
-                showNotification('Vui lòng chọn đủ 4 VĐV', 'error');
-                return;
-            }
+            if (!date) { showNotification('Vui lòng chọn ngày sinh hoạt', 'error'); return; }
+            if (!p1a || !p1b || !p2a || !p2b) { showNotification('Vui lòng chọn đủ 4 VĐV', 'error'); return; }
             const allPlayers = [p1a, p1b, p2a, p2b];
-            if (new Set(allPlayers).size !== 4) {
-                showNotification('Các VĐV không được trùng nhau', 'error');
-                return;
-            }
+            if (new Set(allPlayers).size !== 4) { showNotification('Các VĐV không được trùng nhau', 'error'); return; }
 
             const pair1 = `${p1a} - ${p1b}`;
             const pair2 = `${p2a} - ${p2b}`;
 
             matches.push({
-                id: Date.now(),
-                date,
-                pair1,
-                pair2,
-                score1,
-                score2,
+                id: Date.now(), date, pair1, pair2, score1, score2,
                 result1: score1 > score2 ? 'win' : 'lose',
                 result2: score2 > score1 ? 'win' : 'lose'
             });
@@ -927,29 +854,21 @@
                 if (m.result1 === 'win') {
                     playerMoney[p1a] = (playerMoney[p1a] || { money: 0, matches: 0 });
                     playerMoney[p1b] = (playerMoney[p1b] || { money: 0, matches: 0 });
-                    playerMoney[p1a].money += 50;
-                    playerMoney[p1b].money += 50;
-                    playerMoney[p1a].matches++;
-                    playerMoney[p1b].matches++;
+                    playerMoney[p1a].money += 50; playerMoney[p1b].money += 50;
+                    playerMoney[p1a].matches++; playerMoney[p1b].matches++;
                     playerMoney[p2a] = (playerMoney[p2a] || { money: 0, matches: 0 });
                     playerMoney[p2b] = (playerMoney[p2b] || { money: 0, matches: 0 });
-                    playerMoney[p2a].money -= 50;
-                    playerMoney[p2b].money -= 50;
-                    playerMoney[p2a].matches++;
-                    playerMoney[p2b].matches++;
+                    playerMoney[p2a].money -= 50; playerMoney[p2b].money -= 50;
+                    playerMoney[p2a].matches++; playerMoney[p2b].matches++;
                 } else {
                     playerMoney[p2a] = (playerMoney[p2a] || { money: 0, matches: 0 });
                     playerMoney[p2b] = (playerMoney[p2b] || { money: 0, matches: 0 });
-                    playerMoney[p2a].money += 50;
-                    playerMoney[p2b].money += 50;
-                    playerMoney[p2a].matches++;
-                    playerMoney[p2b].matches++;
+                    playerMoney[p2a].money += 50; playerMoney[p2b].money += 50;
+                    playerMoney[p2a].matches++; playerMoney[p2b].matches++;
                     playerMoney[p1a] = (playerMoney[p1a] || { money: 0, matches: 0 });
                     playerMoney[p1b] = (playerMoney[p1b] || { money: 0, matches: 0 });
-                    playerMoney[p1a].money -= 50;
-                    playerMoney[p1b].money -= 50;
-                    playerMoney[p1a].matches++;
-                    playerMoney[p1b].matches++;
+                    playerMoney[p1a].money -= 50; playerMoney[p1b].money -= 50;
+                    playerMoney[p1a].matches++; playerMoney[p1b].matches++;
                 }
             });
 
@@ -973,11 +892,9 @@
 
         function updateRankingSkill() {
             const playerStats = {};
-
             matches.forEach(m => {
                 const [p1a, p1b] = m.pair1.split(' - ').map(x => x.trim());
                 const [p2a, p2b] = m.pair2.split(' - ').map(x => x.trim());
-
                 [p1a, p1b, p2a, p2b].forEach(name => {
                     if (!playerStats[name]) playerStats[name] = { wins: 0, matches: 0 };
                     playerStats[name].matches++;
@@ -992,7 +909,6 @@
                 .sort((a, b) => (b[1].wins / b[1].matches) - (a[1].wins / a[1].matches));
 
             const tbody = document.getElementById('rankingSkillBody');
-
             if (filtered.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Chưa có VĐV ≥5 trận</td></tr>';
                 return;
@@ -1003,9 +919,7 @@
                 return `
                     <tr>
                         <td><span class="rank-badge ${i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : ''}">${i + 1}</span></td>
-                        <td>${name}</td>
-                        <td>${stats.matches}</td>
-                        <td>${wr}%</td>
+                        <td>${name}</td><td>${stats.matches}</td><td>${wr}%</td>
                     </tr>
                 `;
             }).join('');
@@ -1013,7 +927,6 @@
 
         function updateRankingScore() {
             const playerScore = {};
-
             matches.forEach(m => {
                 const [p1a, p1b] = m.pair1.split(' - ').map(x => x.trim());
                 const [p2a, p2b] = m.pair2.split(' - ').map(x => x.trim());
@@ -1021,45 +934,29 @@
                 if (m.result1 === 'win') {
                     playerScore[p1a] = (playerScore[p1a] || { score: 0, wins: 0, losses: 0, totalScore1: 0, totalScore2: 0 });
                     playerScore[p1b] = (playerScore[p1b] || { score: 0, wins: 0, losses: 0, totalScore1: 0, totalScore2: 0 });
-                    playerScore[p1a].score += 1;
-                    playerScore[p1b].score += 1;
-                    playerScore[p1a].wins++;
-                    playerScore[p1b].wins++;
-                    playerScore[p1a].totalScore1 += m.score1;
-                    playerScore[p1b].totalScore1 += m.score1;
-                    playerScore[p1a].totalScore2 += m.score2;
-                    playerScore[p1b].totalScore2 += m.score2;
+                    playerScore[p1a].score += 1; playerScore[p1b].score += 1;
+                    playerScore[p1a].wins++; playerScore[p1b].wins++;
+                    playerScore[p1a].totalScore1 += m.score1; playerScore[p1b].totalScore1 += m.score1;
+                    playerScore[p1a].totalScore2 += m.score2; playerScore[p1b].totalScore2 += m.score2;
                     playerScore[p2a] = (playerScore[p2a] || { score: 0, wins: 0, losses: 0, totalScore1: 0, totalScore2: 0 });
                     playerScore[p2b] = (playerScore[p2b] || { score: 0, wins: 0, losses: 0, totalScore1: 0, totalScore2: 0 });
-                    playerScore[p2a].score -= 1;
-                    playerScore[p2b].score -= 1;
-                    playerScore[p2a].losses++;
-                    playerScore[p2b].losses++;
-                    playerScore[p2a].totalScore1 += m.score2;
-                    playerScore[p2b].totalScore1 += m.score2;
-                    playerScore[p2a].totalScore2 += m.score1;
-                    playerScore[p2b].totalScore2 += m.score1;
+                    playerScore[p2a].score -= 1; playerScore[p2b].score -= 1;
+                    playerScore[p2a].losses++; playerScore[p2b].losses++;
+                    playerScore[p2a].totalScore1 += m.score2; playerScore[p2b].totalScore1 += m.score2;
+                    playerScore[p2a].totalScore2 += m.score1; playerScore[p2b].totalScore2 += m.score1;
                 } else {
                     playerScore[p2a] = (playerScore[p2a] || { score: 0, wins: 0, losses: 0, totalScore1: 0, totalScore2: 0 });
                     playerScore[p2b] = (playerScore[p2b] || { score: 0, wins: 0, losses: 0, totalScore1: 0, totalScore2: 0 });
-                    playerScore[p2a].score += 1;
-                    playerScore[p2b].score += 1;
-                    playerScore[p2a].wins++;
-                    playerScore[p2b].wins++;
-                    playerScore[p2a].totalScore1 += m.score2;
-                    playerScore[p2b].totalScore1 += m.score2;
-                    playerScore[p2a].totalScore2 += m.score1;
-                    playerScore[p2b].totalScore2 += m.score1;
+                    playerScore[p2a].score += 1; playerScore[p2b].score += 1;
+                    playerScore[p2a].wins++; playerScore[p2b].wins++;
+                    playerScore[p2a].totalScore1 += m.score2; playerScore[p2b].totalScore1 += m.score2;
+                    playerScore[p2a].totalScore2 += m.score1; playerScore[p2b].totalScore2 += m.score1;
                     playerScore[p1a] = (playerScore[p1a] || { score: 0, wins: 0, losses: 0, totalScore1: 0, totalScore2: 0 });
                     playerScore[p1b] = (playerScore[p1b] || { score: 0, wins: 0, losses: 0, totalScore1: 0, totalScore2: 0 });
-                    playerScore[p1a].score -= 1;
-                    playerScore[p1b].score -= 1;
-                    playerScore[p1a].losses++;
-                    playerScore[p1b].losses++;
-                    playerScore[p1a].totalScore1 += m.score1;
-                    playerScore[p1b].totalScore1 += m.score1;
-                    playerScore[p1a].totalScore2 += m.score2;
-                    playerScore[p1b].totalScore2 += m.score2;
+                    playerScore[p1a].score -= 1; playerScore[p1b].score -= 1;
+                    playerScore[p1a].losses++; playerScore[p1b].losses++;
+                    playerScore[p1a].totalScore1 += m.score1; playerScore[p1b].totalScore1 += m.score1;
+                    playerScore[p1a].totalScore2 += m.score2; playerScore[p1b].totalScore2 += m.score2;
                 }
             });
 
@@ -1076,8 +973,7 @@
                 return `
                     <tr>
                         <td><span class="rank-badge ${i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : ''}">${i + 1}</span></td>
-                        <td>${name}</td>
-                        <td>${data.wins}/${data.losses}</td>
+                        <td>${name}</td><td>${data.wins}/${data.losses}</td>
                         <td><span class="money ${data.score >= 0 ? 'positive' : 'negative'}">${data.score >= 0 ? '+' : ''}${data.score}đ</span></td>
                         <td><span class="money ${scoreDiff >= 0 ? 'positive' : 'negative'}">${scoreDiff >= 0 ? '+' : ''}${scoreDiff}</span></td>
                     </tr>
@@ -1088,14 +984,7 @@
         async function manualSaveFirebase() {
             setSyncLoading(true);
             try {
-                await set(ref(database, 'VietTri'), { 
-                    members, 
-                    schedules, 
-                    matches, 
-                    adminPassword,
-                    readOnlyMode: true,
-                    lastSync: new Date().toISOString() 
-                });
+                await set(ref(database, 'VietTri'), { members, schedules, matches, adminPassword, readOnlyMode: true, lastSync: new Date().toISOString() });
                 setSyncLoading(false);
                 showNotification('✅ Lưu Firebase thành công!', 'success');
             } catch (e) {
@@ -1135,14 +1024,7 @@
 
         async function autoSync() {
             try {
-                await set(ref(database, 'VietTri'), { 
-                    members, 
-                    schedules, 
-                    matches, 
-                    adminPassword,
-                    readOnlyMode: true,
-                    lastSync: new Date().toISOString() 
-                });
+                await set(ref(database, 'VietTri'), { members, schedules, matches, adminPassword, readOnlyMode: true, lastSync: new Date().toISOString() });
             } catch (e) {}
         }
 
@@ -1191,6 +1073,7 @@
             members = [];
             schedules = [];
             matches = [];
+            saveData();
             updateMembersList();
             updateScheduleList();
             updateMatchList();
@@ -1210,9 +1093,10 @@
             setTimeout(() => notification.remove(), 3000);
         }
 
-        // Tự động tải dữ liệu từ Firebase khi trang mở
         async function initializeApp() {
             setSyncLoading(true);
+            loadLocalData();
+            
             try {
                 const snapshot = await get(ref(database, 'VietTri'));
                 if (snapshot.exists()) {
@@ -1221,36 +1105,24 @@
                     schedules = data.schedules || [];
                     matches = data.matches || [];
                     adminPassword = data.adminPassword || 'Tayho';
-                    updateMembersList();
-                    updatePairSelects();
-                    updateScheduleList();
-                    updateScheduleSelects();
-                    updateMatchList();
-                    applyReadOnlyMode();
-                    updateSettingsUI();
-                    console.log('✅ Tải dữ liệu VietTri từ Firebase thành công!');
-                } else {
-                    console.log('⚠️ Chưa có dữ liệu trong VietTri');
+                    saveData();
                 }
             } catch (e) {
-                console.error('❌ Lỗi tải dữ liệu:', e.message);
-            } finally {
-                setSyncLoading(false);
+                console.log('Không thể kết nối Firebase, sử dụng dữ liệu local');
             }
+            
+            updateMembersList();
+            updatePairSelects();
+            updateScheduleList();
+            updateScheduleSelects();
+            updateMatchList();
+            applyReadOnlyMode();
+            updateSettingsUI();
+            setSyncLoading(false);
         }
 
-        updateMembersList();
-        updatePairSelects();
-        updateScheduleList();
-        updateScheduleSelects();
-        updateMatchList();
+        initializeApp();
         document.getElementById('autoSyncBtn').textContent = '✅ Tự Động Đồng Bộ (BẬT)';
-        applyReadOnlyMode();
-        updateSettingsUI();
-
-        // Khởi tạo ứng dụng ngay khi trang load
-        window.addEventListener('DOMContentLoaded', initializeApp);
-        window.addEventListener('load', initializeApp);
     </script>
 </body>
 </html>
