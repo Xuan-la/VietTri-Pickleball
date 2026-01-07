@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản Lý CLB Pickleball - Firebase</title>
+    <title>Quản Lý CLB VietTri - Firebase</title>
     <style>
         :root {
             --color-primary: #208791;
@@ -340,7 +340,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>🏓 Quản Lý CLB Pickleball</h1>
+            <h1>🏓 Quản Lý CLB VietTri</h1>
             <p>Tính tiền + Firebase Cloud Sync</p>
         </header>
 
@@ -593,12 +593,12 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
-        let members = JSON.parse(localStorage.getItem('members')) || [];
-        let schedules = JSON.parse(localStorage.getItem('schedules')) || [];
-        let matches = JSON.parse(localStorage.getItem('matches')) || [];
+        let members = [];
+        let schedules = [];
+        let matches = [];
         let autoSyncEnabled = true;
         let readOnlyMode = true;
-        let adminPassword = localStorage.getItem('adminPassword') || 'Ali33';
+        let adminPassword = 'Tayho';
 
         function switchTab(event, tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
@@ -641,15 +641,11 @@
         }
 
         function applyReadOnlyMode() {
-            // Chế độ xem: chỉ khóa nút hành động, KHÔNG khóa select / input ngày
             const disableButtonsText = ['Thêm', 'Ghi', 'Xóa'];
             const buttons = document.querySelectorAll('.btn');
-
             buttons.forEach(btn => {
                 const text = btn.textContent || '';
-                const isAction =
-                    disableButtonsText.some(t => text.includes(t)) &&
-                    !text.includes('Tải') && !text.includes('Firebase');
+                const isAction = disableButtonsText.some(t => text.includes(t)) && !text.includes('Tải') && !text.includes('Firebase');
                 if (isAction) {
                     btn.disabled = readOnlyMode;
                     btn.style.opacity = readOnlyMode ? '0.5' : '1';
@@ -1104,7 +1100,7 @@
                 showNotification('✅ Lưu Firebase thành công!', 'success');
             } catch (e) {
                 setSyncLoading(false);
-                showNotification('❌ Lưu thất bại', 'error');
+                showNotification('❌ Lưu thất bại: ' + e.message, 'error');
             }
         }
 
@@ -1117,9 +1113,7 @@
                     members = data.members || [];
                     schedules = data.schedules || [];
                     matches = data.matches || [];
-                    adminPassword = data.adminPassword || 'Ali33';
-                    saveData();
-                    localStorage.setItem('adminPassword', adminPassword);
+                    adminPassword = data.adminPassword || 'Tayho';
                     updateMembersList();
                     updatePairSelects();
                     updateScheduleList();
@@ -1128,14 +1122,14 @@
                     applyReadOnlyMode();
                     updateSettingsUI();
                     setSyncLoading(false);
-                    showNotification('✅ Tải Firebase thành công!', 'success');
+                    showNotification('✅ Tải Firebase VietTri thành công!', 'success');
                 } else {
                     setSyncLoading(false);
-                    showNotification('⚠️ Không có dữ liệu', 'info');
+                    showNotification('⚠️ Không có dữ liệu trong VietTri', 'info');
                 }
             } catch (e) {
                 setSyncLoading(false);
-                showNotification('❌ Tải thất bại', 'error');
+                showNotification('❌ Tải thất bại: ' + e.message, 'error');
             }
         }
 
@@ -1197,7 +1191,6 @@
             members = [];
             schedules = [];
             matches = [];
-            saveData();
             updateMembersList();
             updateScheduleList();
             updateMatchList();
@@ -1217,13 +1210,6 @@
             setTimeout(() => notification.remove(), 3000);
         }
 
-        function saveData() {
-            localStorage.setItem('members', JSON.stringify(members));
-            localStorage.setItem('schedules', JSON.stringify(schedules));
-            localStorage.setItem('matches', JSON.stringify(matches));
-        }
-
-        // Init
         updateMembersList();
         updatePairSelects();
         updateScheduleList();
